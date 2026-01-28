@@ -26,7 +26,7 @@ h1 {
   padding: 6px;
   perspective: 1000px;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
@@ -42,15 +42,21 @@ h1 {
   transform-style: preserve-3d;
 }
 
+/* Overlay styles */
 #overlay {
   position: fixed;
   inset: 0;
   background: rgba(10, 10, 15, 0.75);
   backdrop-filter: blur(6px);
-  display: flex;
+  display: none;           /* hidden by default */
   align-items: center;
   justify-content: center;
   z-index: 100;
+}
+
+#overlay.active {
+  display: flex;           /* show overlay when active */
+  overflow: hidden;        /* disable scrolling */
 }
 
 #overlay img {
@@ -59,8 +65,5 @@ h1 {
   transform: scale(1);
   box-shadow: 0 30px 80px rgba(0,0,0,0.7);
   border-radius: 12px;
-}
-
-.hidden {
-  display: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

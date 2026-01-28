@@ -63,7 +63,10 @@ const cardImages = [
 ];
 
 const library = document.getElementById("card-library");
+const overlay = document.getElementById("overlay");
+const overlayImg = document.getElementById("overlay-img");
 
+// Load cards
 cardImages.forEach(filename => {
   const cardDiv = document.createElement("div");
   cardDiv.className = "card";
@@ -100,14 +103,17 @@ cardImages.forEach(filename => {
   library.appendChild(cardDiv);
 });
 
-const overlay = document.getElementById("overlay");
-const overlayImg = document.getElementById("overlay-img");
-
+// --- Functions to show/hide overlay ---
 function openCardPreview(filename) {
   overlayImg.src = `cards/${filename}`;
-  overlay.classList.remove("hidden");
+  overlay.classList.add("active");
+  document.body.style.overflow = "hidden"; // disable scroll while overlay active
 }
 
-overlay.addEventListener("click", () => {
-  overlay.classList.add("hidden");
-});
+function closeCardPreview() {
+  overlay.classList.remove("active");
+  document.body.style.overflow = "auto"; // restore scroll
+}
+
+// Close overlay when clicked anywhere
+overlay.addEventListener("click", closeCardPreview);
