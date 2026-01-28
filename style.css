@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  padding: 16px;
+  background: #0f1115;
+  color: #e6e6e6;
+  font-family: sans-serif;
+}
+
+h1 {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+#card-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.card {
+  background: #1a1d24;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card img {
+  width: 100%;
+  display: block;
+  border-radius: 6px;
+}
