@@ -24,16 +24,43 @@ h1 {
   background: #1a1d24;
   border-radius: 8px;
   padding: 6px;
+  perspective: 1000px;
   cursor: pointer;
   transition: transform 0.1s ease;
 }
 
 .card:hover {
   transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 .card img {
   width: 100%;
   display: block;
   border-radius: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform-style: preserve-3d;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#overlay img {
+  max-height: 80vh;
+  max-width: 80vw;
+  transform: scale(1);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  border-radius: 12px;
+}
+
+.hidden {
+  display: none;
 }

@@ -72,6 +72,42 @@ cardImages.forEach(filename => {
   img.src = `cards/${filename}`;
   img.alt = filename;
 
+  // --- Mouse bend effect ---
+  cardDiv.addEventListener("mousemove", (e) => {
+    const rect = cardDiv.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * 8;
+    const rotateY = ((x - centerX) / centerX) * -8;
+
+    img.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+  });
+
+  cardDiv.addEventListener("mouseleave", () => {
+    img.style.transform = "rotateX(0) rotateY(0) scale(1)";
+  });
+
+  // --- Click to focus ---
+  cardDiv.addEventListener("click", () => {
+    openCardPreview(filename);
+  });
+
   cardDiv.appendChild(img);
   library.appendChild(cardDiv);
+});
+
+const overlay = document.getElementById("overlay");
+const overlayImg = document.getElementById("overlay-img");
+
+function openCardPreview(filename) {
+  overlayImg.src = `cards/${filename}`;
+  overlay.classList.remove("hidden");
+}
+
+overlay.addEventListener("click", () => {
+  overlay.classList.add("hidden");
 });
