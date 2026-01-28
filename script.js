@@ -103,6 +103,8 @@ cardImages.forEach(filename => {
   library.appendChild(cardDiv);
 });
 
+const glint = overlay.querySelector(".glint");
+
 // Tilt effect for centered card
 function overlayTilt(e) {
   const rect = overlayImg.getBoundingClientRect();
@@ -116,6 +118,9 @@ function overlayTilt(e) {
   const rotateY = ((x - centerX) / centerX) * -8;
 
   overlayImg.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+  // Move the glint
+  glint.style.transform = `translateX(${rotateX * 2}px) translateY(${rotateY * 2}px) rotate(25deg)`;
+
 }
 
 // --- Functions to show/hide overlay ---
