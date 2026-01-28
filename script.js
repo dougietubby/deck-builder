@@ -64,7 +64,7 @@ const cardImages = [
 
 const library = document.getElementById("card-library");
 const overlay = document.getElementById("overlay");
-const overlayImg = document.getElementById("overlay-img");
+//const overlayImg = document.getElementById("overlay-img");
 
 // Load cards
 cardImages.forEach(filename => {
@@ -103,11 +103,11 @@ cardImages.forEach(filename => {
   library.appendChild(cardDiv);
 });
 
+const overlayCard = overlay.querySelector(".overlay-card");
 const glint = overlay.querySelector(".glint");
-
-// Tilt effect for centered card
+//  Tilt with Glint effect
 function overlayTilt(e) {
-  const rect = overlayImg.getBoundingClientRect();
+  const rect = overlayCard.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
@@ -117,10 +117,14 @@ function overlayTilt(e) {
   const rotateX = ((y - centerY) / centerY) * 8;
   const rotateY = ((x - centerX) / centerX) * -8;
 
-  overlayImg.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-  // Move the glint
-  glint.style.transform = `translateX(${rotateX * 2}px) translateY(${rotateY * 2}px) rotate(25deg)`;
+  // Rotate the whole card (image + glint together)
+  overlayCard.style.transform =
+    `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
 
+  // Move light across surface instead of moving the glint itself
+  const bgX = 50 + rotateY * 5;
+  const bgY = 50 + rotateX * 5;
+  glint.style.backgroundPosition = `${bgX}% ${bgY}%`;
 }
 
 // --- Functions to show/hide overlay ---
@@ -131,8 +135,8 @@ function openCardPreview(filename) {
 
   // Reset rotation
   overlayImg.style.transform = "rotateX(0) rotateY(0) scale(1.05)";
+  glint.style.backgroundPosition = "50% 50%";
 
-  // Add mousemove listener for tilt
   overlay.addEventListener("mousemove", overlayTilt);
 }
 
@@ -146,3 +150,4 @@ function closeCardPreview() {
 
 // Close overlay when clicked anywhere
 overlay.addEventListener("click", closeCardPreview);
+overlayCard.addEventListener("click", e => e.stopPropagation());
