@@ -64,7 +64,9 @@ const cardImages = [
 
 const library = document.getElementById("card-library");
 const overlay = document.getElementById("overlay");
-//const overlayImg = document.getElementById("overlay-img");
+const overlayImg = document.getElementById("overlay-img");
+
+const glint = overlay.querySelector(".glint");
 
 // Load cards
 cardImages.forEach(filename => {
@@ -104,7 +106,7 @@ cardImages.forEach(filename => {
 });
 
 const overlayCard = overlay.querySelector(".overlay-card");
-const glint = overlay.querySelector(".glint");
+
 //  Tilt with Glint effect
 function overlayTilt(e) {
   const rect = overlayCard.getBoundingClientRect();
