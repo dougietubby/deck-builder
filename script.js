@@ -103,16 +103,40 @@ cardImages.forEach(filename => {
   library.appendChild(cardDiv);
 });
 
+// Tilt effect for centered card
+function overlayTilt(e) {
+  const rect = overlayImg.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  const rotateX = ((y - centerY) / centerY) * 8;
+  const rotateY = ((x - centerX) / centerX) * -8;
+
+  overlayImg.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
+}
+
 // --- Functions to show/hide overlay ---
 function openCardPreview(filename) {
   overlayImg.src = `cards/${filename}`;
   overlay.classList.add("active");
   document.body.style.overflow = "hidden"; // disable scroll while overlay active
+
+  // Reset rotation
+  overlayImg.style.transform = "rotateX(0) rotateY(0) scale(1.05)";
+
+  // Add mousemove listener for tilt
+  overlay.addEventListener("mousemove", overlayTilt);
 }
 
 function closeCardPreview() {
   overlay.classList.remove("active");
   document.body.style.overflow = "auto"; // restore scroll
+
+  // Remove tilt listener
+  overlay.removeEventListener("mousemove", overlayTilt);
 }
 
 // Close overlay when clicked anywhere
