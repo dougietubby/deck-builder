@@ -21,7 +21,7 @@ h1 {
 }
 
 .card {
-  background: #1a1d24;
+  background: transparent;
   border-radius: 8px;
   padding: 6px;
   perspective: 1000px;
