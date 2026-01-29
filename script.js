@@ -1,65 +1,80 @@
-const cardImages = [
-  "angelic_totem.png",
-  "arcane_barrier.png",
-  "archelon_mount.png",
-  "astral_halo.png",
-  "backswing.png",
-  "bash.png",
-  "black_imp.png",
-  "blood_pact.png",
-  "bloodspike_plating.png",
-  "bubbling_brew.png",
-  "celestial_extraction.png",
-  "cleave.png",
-  "counter_spell.png",
-  "creeping_miasma.png",
-  "crescent_helm.png",
-  "critical_strike.png",
-  "crush.png",
-  "devouring_urn.png",
-  "dream_parasite.png",
-  "druids_poise.png",
-  "dwarvish_salve.png",
-  "encumber.png",
-  "execute.png",
-  "faes_whisper.png",
-  "fireball.png",
-  "forgemasters_lie.png",
-  "green_imp.png",
-  "hasten.png",
-  "heroic_chestplate.png",
-  "liquid_courage.png",
-  "living_wall.png",
-  "looking_glass.png",
-  "loyal_companion.png",
-  "mana_surge.png",
-  "mnemonic_shard.png",
-  "mori_totem.png",
-  "oracle_of_the_grove.png",
-  "phantom_bolt.png",
-  "pierce.png",
-  "predestination.png",
-  "puncture.png",
-  "punisher.png",
-  "purifying_flask.png",
-  "reanimate.png",
-  "red_imp.png",
-  "reminisce.png",
-  "saving_echo.png",
-  "searing_gaze.png",
-  "silencing_barrier.png",
-  "soul_totem.png",
-  "stupify.png",
-  "summon_gemini.png",
-  "thistle_wart.png",
-  "thorned_crown.png",
-  "trample.png",
-  "vampyric_blood.png",
-  "vindicta_totem.png",
-  "vulnerog_totem.png",
-  "wailing_curse.png",
-  "aegis_aura.png"
-  // add more here
+const cards = [
+  { file: "angelic_totem.png", classes: [] },
+  { file: "arcane_barrier.png", classes: [] },
+  { file: "archelon_mount.png", classes: [] },
+  { file: "astral_halo.png", classes: [] },
+
+  { file: "backswing.png", classes: ["rogue"] },
+  { file: "bash.png", classes: [] },
+  { file: "black_imp.png", classes: [] },
+  { file: "blood_pact.png", classes: [] },
+  { file: "bloodspike_plating.png", classes: [] },
+  { file: "bubbling_brew.png", classes: [] },
+  { file: "celestial_extraction.png", classes: [] },
+
+  { file: "cleave.png", classes: ["knight", "mage"] },
+  { file: "counter_spell.png", classes: [] },
+  { file: "creeping_miasma.png", classes: [] },
+
+  { file: "crescent_helm.png", classes: ["knight"] },
+  { file: "critical_strike.png", classes: ["knight"] },
+  { file: "crush.png", classes: ["knight", "rogue"] },
+
+  { file: "devouring_urn.png", classes: [] },
+  { file: "dream_parasite.png", classes: [] },
+
+  { file: "druids_poise.png", classes: ["knight", "mage", "rogue"] },
+  { file: "dwarvish_salve.png", classes: [] },
+  { file: "encumber.png", classes: [] },
+
+  { file: "execute.png", classes: ["knight"] },
+  { file: "faes_whisper.png", classes: ["knight"] },
+  { file: "fireball.png", classes: ["mage"] },
+
+  { file: "forgemasters_lie.png", classes: [] },
+  { file: "green_imp.png", classes: [] },
+  { file: "hasten.png", classes: [] },
+
+  { file: "heroic_chestplate.png", classes: ["knight"] },
+  { file: "liquid_courage.png", classes: ["mage", "rogue"] },
+  { file: "living_wall.png", classes: [] },
+
+  { file: "looking_glass.png", classes: ["rogue"] },
+  { file: "loyal_companion.png", classes: [] },
+
+  { file: "mana_surge.png", classes: ["mage"] },
+  { file: "mnemonic_shard.png", classes: [] },
+  { file: "mori_totem.png", classes: [] },
+  { file: "oracle_of_the_grove.png", classes: [] },
+
+  { file: "phantom_bolt.png", classes: ["mage"] },
+  { file: "pierce.png", classes: ["rogue"] },
+  { file: "predestination.png", classes: [] },
+  { file: "puncture.png", classes: [] },
+  { file: "punisher.png", classes: [] },
+
+  { file: "purifying_flask.png", classes: ["knight"] },
+  { file: "reanimate.png", classes: [] },
+  { file: "red_imp.png", classes: [] },
+  { file: "reminisce.png", classes: [] },
+  { file: "saving_echo.png", classes: [] },
+  { file: "searing_gaze.png", classes: [] },
+  { file: "silencing_barrier.png", classes: [] },
+  { file: "soul_totem.png", classes: [] },
+
+  { file: "stupify.png", classes: ["rogue"] },
+  { file: "summon_gemini.png", classes: [] },
+
+  { file: "thistle_wart.png", classes: ["mage"] },
+  { file: "thorned_crown.png", classes: [] },
+
+  { file: "trample.png", classes: ["mage"] },
+  { file: "vampyric_blood.png", classes: [] },
+  { file: "vindicta_totem.png", classes: [] },
+  { file: "vulnerog_totem.png", classes: ["mage"] },
+
+  { file: "wailing_curse.png", classes: ["rogue"] },
+  { file: "aegis_aura.png", classes: ["rogue"] }
 ];
 
 const library = document.getElementById("card-library");
@@ -68,65 +83,107 @@ const overlayImg = document.getElementById("overlay-img");
 
 const glint = overlay.querySelector(".glint");
 
-// Load cards
-cardImages.forEach(filename => {
-  const cardDiv = document.createElement("div");
-  cardDiv.className = "card";
+function renderCards(filterClass = "all") {
+  library.innerHTML = "";
 
-  const img = document.createElement("img");
-  img.src = `cards/${filename}`;
-  img.alt = filename;
+  cards.forEach(card => {
+    if (
+      filterClass !== "all" &&
+      !card.classes.includes(filterClass)
+    ) return;
 
-  // --- Mouse bend effect ---
-  cardDiv.addEventListener("mousemove", (e) => {
-    const rect = cardDiv.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "card";
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    const img = document.createElement("img");
+    img.src = `cards/${card.file}`;
+    img.alt = card.file;
 
-    const rotateX = ((y - centerY) / centerY) * 8;
-    const rotateY = ((x - centerX) / centerX) * -8;
+    cardDiv.addEventListener("mousemove", (e) => {
+      const rect = cardDiv.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-    img.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * 8;
+      const rotateY = ((x - centerX) / centerX) * -8;
+
+      img.style.transform =
+        `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+    });
+
+    cardDiv.addEventListener("mouseleave", () => {
+      img.style.transform = "rotateX(0) rotateY(0) scale(1)";
+    });
+
+    cardDiv.addEventListener("click", () => {
+      openCardPreview(card.file);
+    });
+
+    cardDiv.appendChild(img);
+    library.appendChild(cardDiv);
   });
+}
 
-  cardDiv.addEventListener("mouseleave", () => {
-    img.style.transform = "rotateX(0) rotateY(0) scale(1)";
+document.querySelectorAll("#class-select button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const selectedClass = btn.dataset.class;
+
+    document
+      .querySelectorAll("#class-select button")
+      .forEach(b => b.classList.remove("active"));
+
+    btn.classList.add("active");
+
+    renderCards(selectedClass);
   });
-
-  // --- Click to focus ---
-  cardDiv.addEventListener("click", () => {
-    openCardPreview(filename);
-  });
-
-  cardDiv.appendChild(img);
-  library.appendChild(cardDiv);
 });
 
 const overlayCard = overlay.querySelector(".overlay-card");
+const MAX_TILT = 10;
 
 //  Tilt with Glint effect
 function overlayTilt(e) {
   const rect = overlayCard.getBoundingClientRect();
+
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
-  const centerX = rect.width / 2;
-  const centerY = rect.height / 2;
+  const px = (x / rect.width) - 0.5;
+  const py = (y / rect.height) - 0.5;
 
-  const rotateX = ((y - centerY) / centerY) * 8;
-  const rotateY = ((x - centerX) / centerX) * -8;
+  const rotateY = clamp(px * MAX_TILT * 2, -MAX_TILT, MAX_TILT);
+  const rotateX = clamp(-py * MAX_TILT * 2, -MAX_TILT, MAX_TILT);
 
-  // Rotate the whole card (image + glint together)
   overlayCard.style.transform =
     `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
 
-  // Move light across surface instead of moving the glint itself
-  const bgX = 50 + rotateY * 5;
-  const bgY = 50 + rotateX * 5;
-  glint.style.backgroundPosition = `${bgX}% ${bgY}%`;
+  // Glint follows tilt, not raw mouse
+  glint.style.backgroundPosition = `
+    ${50 + rotateY * 4}% 
+    ${50 - rotateX * 4}%
+  `;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function resetOverlayTilt() {
+  overlayCard.style.transition = "transform 0.3s ease";
+  glint.style.transition = "background-position 0.3s ease";
+
+  overlayCard.style.transform =
+    "rotateX(0deg) rotateY(0deg) scale(1.05)";
+  glint.style.backgroundPosition = "50% 50%";
+
+  // Remove transition after it finishes so movement stays snappy
+  setTimeout(() => {
+    overlayCard.style.transition = "";
+    glint.style.transition = "";
+  }, 300);
 }
 
 // --- Functions to show/hide overlay ---
@@ -138,8 +195,10 @@ function openCardPreview(filename) {
   // Reset rotation
   overlayImg.style.transform = "rotateX(0) rotateY(0) scale(1.05)";
   glint.style.backgroundPosition = "50% 50%";
+  
 
-  overlay.addEventListener("mousemove", overlayTilt);
+  overlayCard.addEventListener("mousemove", overlayTilt);
+  overlayCard.addEventListener("mouseleave", resetOverlayTilt);
 }
 
 function closeCardPreview() {
@@ -148,8 +207,12 @@ function closeCardPreview() {
 
   // Remove tilt listener
   overlay.removeEventListener("mousemove", overlayTilt);
+  overlayCard.removeEventListener("mouseleave", resetOverlayTilt);
+
+  resetOverlayTilt();
 }
 
+renderCards();
 // Close overlay when clicked anywhere
 overlay.addEventListener("click", closeCardPreview);
 overlayCard.addEventListener("click", e => e.stopPropagation());
