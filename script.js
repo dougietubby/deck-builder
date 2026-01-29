@@ -81,17 +81,33 @@ const library = document.getElementById("card-library");
 const overlay = document.getElementById("overlay");
 const overlayImg = document.getElementById("overlay-img");
 
+function setLibraryMode(mode) {
+  library.classList.remove("circle", "grid", "horizontal");
+  library.classList.add(mode);
+}
+
 const glint = overlay.querySelector(".glint");
 
-function renderCards(filterClass = "all") {
+let hasStarted = false;
+
+function renderCards(filterClass = "all", circular = false) {
   library.innerHTML = "";
 
-  cards.forEach(card => {
-    if (
-      filterClass !== "all" &&
-      !card.classes.includes(filterClass)
-    ) return;
+  const filtered = cards.filter(card =>
+    filterClass === "all" || card.classes.includes(filterClass)
+  );
 
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const minDim = Math.min(vw, vh);
+
+  // 30–40% feels great for cards
+  const radius = Math.min(minDim * 0.35, 420);
+
+  const centerX = library.offsetWidth / 2;
+  const centerY = 260;
+
+  filtered.forEach((card, index) => {
     const cardDiv = document.createElement("div");
     cardDiv.className = "card";
 
@@ -99,6 +115,7 @@ function renderCards(filterClass = "all") {
     img.src = `cards/${card.file}`;
     img.alt = card.file;
 
+    // --- Existing hover logic (unchanged) ---
     cardDiv.addEventListener("mousemove", (e) => {
       const rect = cardDiv.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -124,20 +141,85 @@ function renderCards(filterClass = "all") {
 
     cardDiv.appendChild(img);
     library.appendChild(cardDiv);
+
+    // --- Circular intro animation ---
+    if (circular) {
+      const angle = (index / filtered.length) * Math.PI * 2;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+
+      cardDiv.style.position = "absolute";
+      cardDiv.style.left = "50%";
+      cardDiv.style.top = "50%";
+      cardDiv.style.transform =
+        `translate(-50%, -50%) translate(${x}px, ${y}px) scale(0.35)`;
+      cardDiv.style.transition = "transform 0.8s ease";
+    }
   });
 }
 
+function layoutCircle(cards) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const minDim = Math.min(vw, vh);
+  const radius = Math.min(minDim * 0.35, 420);
+
+  const centerX = vw / 2;
+  const centerY = vh / 2;
+
+  cards.forEach((card, i) => {
+    const angle = (index / filtered.length) * Math.PI * 2;
+
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+
+    cardDiv.style.position = "absolute";
+    cardDiv.style.left = `${cx}px`;
+    cardDiv.style.top = `${cy}px`;
+    cardDiv.style.transform =
+      `translate(-50%, -50%) translate(${x}px, ${y}px) scale(0.35)`;
+    cardDiv.style.transition = "transform 0.8s ease";
+  });
+}
+
+window.addEventListener("resize", () => {
+  if (cardLibrary.classList.contains("circle")) {
+    layoutCircle(activeCards);
+  }
+});
+
+//  Button Logic (Based on class buttons)
 document.querySelectorAll("#class-select button").forEach(btn => {
   btn.addEventListener("click", () => {
     const selectedClass = btn.dataset.class;
+
+    if (!hasStarted) {
+      hasStarted = true;
+      document.body.classList.add("started");
+
+      setLibraryMode("circle");
+      renderCards(selectedClass, true);
+
+    } else {
+      if (selectedClass === "all") {
+        setLibraryMode("horizontal");
+      } else {
+        setLibraryMode("grid");
+      }
+      
+      renderCards(selectedClass);
+    }
+
+    
 
     document
       .querySelectorAll("#class-select button")
       .forEach(b => b.classList.remove("active"));
 
     btn.classList.add("active");
-
-    renderCards(selectedClass);
   });
 });
 
@@ -212,7 +294,8 @@ function closeCardPreview() {
   resetOverlayTilt();
 }
 
-renderCards();
+library.classList.add("grid");
+//renderCards();
 // Close overlay when clicked anywhere
 overlay.addEventListener("click", closeCardPreview);
 overlayCard.addEventListener("click", e => e.stopPropagation());

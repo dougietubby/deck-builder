@@ -11,6 +11,70 @@ h1 {
   font-weight: 500;
 }
 
+/* --- Intro layout --- */
+#class-select-wrapper {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 10;
+  transition: all 0.6s ease;
+}
+
+#class-select {
+  display: flex;
+  gap: 24px;
+}
+
+/* --- Docked state --- */
+body.started #class-select-wrapper {
+  inset: auto;
+  top: 16px;
+  left: 16px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Hide cards until started */
+#card-library {
+  position: relative;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  
+}
+
+/* When class is clicked, draw in cicle (handled in js) */
+#card-library.circle {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Default grid mode */
+#card-library.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  
+
+}
+
+#card-library.horizontal {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+}
+
+body.started #card-library {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 #class-select {
   display: flex;
   gap: 12px;
@@ -34,8 +98,8 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
-  max-height: 80vh;
-  overflow-y: auto;
+  
+  
   padding-right: 8px;
 }
 
