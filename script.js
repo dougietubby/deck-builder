@@ -80,222 +80,240 @@ const cards = [
 const library = document.getElementById("card-library");
 const overlay = document.getElementById("overlay");
 const overlayImg = document.getElementById("overlay-img");
-
-function setLibraryMode(mode) {
-  library.classList.remove("circle", "grid", "horizontal");
-  library.classList.add(mode);
-}
-
+const overlayCard = overlay.querySelector(".overlay-card");
 const glint = overlay.querySelector(".glint");
 
-let hasStarted = false;
+let activeCards = [];
+let orbitTime = 0;
 
-function renderCards(filterClass = "all", circular = false) {
+const BASE_SCALE = 0.95;
+
+/* =====================
+   APP STATE
+===================== */
+const appState = {
+  started: false,
+  activeClass: null,
+  layout: "hidden"
+};
+
+/* =====================
+   RENDER CARDS (CIRCLE)
+===================== */
+function renderCircle(className) {
   library.innerHTML = "";
+  library.className = "circle";
+  activeCards = []; // ✅ RESET STATE
 
-  const filtered = cards.filter(card =>
-    filterClass === "all" || card.classes.includes(filterClass)
-  );
+  const filtered = cards.filter(c => c.classes.includes(className));
+  const count = filtered.length;
 
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const minDim = Math.min(vw, vh);
+  //  Radius size / scale
+  
+  const BASE_RADIUS = 0.25;
+  const radius = Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
 
-  // 30–40% feels great for cards
-  const radius = Math.min(minDim * 0.35, 420);
+  //  Render cards
+  filtered.forEach((card, i) => {
+    const angle = (i / count) * Math.PI * 2;
+    const depth = randRange(0.8, 1.2);
 
-  const centerX = library.offsetWidth / 2;
-  const centerY = 260;
-
-  filtered.forEach((card, index) => {
     const cardDiv = document.createElement("div");
     cardDiv.className = "card";
 
     const img = document.createElement("img");
     img.src = `cards/${card.file}`;
-    img.alt = card.file;
-
-    // --- Existing hover logic (unchanged) ---
-    cardDiv.addEventListener("mousemove", (e) => {
-      const rect = cardDiv.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * 8;
-      const rotateY = ((x - centerX) / centerX) * -8;
-
-      img.style.transform =
-        `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
-    });
-
-    cardDiv.addEventListener("mouseleave", () => {
-      img.style.transform = "rotateX(0) rotateY(0) scale(1)";
-    });
-
-    cardDiv.addEventListener("click", () => {
-      openCardPreview(card.file);
-    });
 
     cardDiv.appendChild(img);
     library.appendChild(cardDiv);
 
-    // --- Circular intro animation ---
-    if (circular) {
-      const angle = (index / filtered.length) * Math.PI * 2;
+    // ----- Store orbital state -----
+    const baseZ = Math.floor(depth * 100);
+
+    const cardState = {
+      el: cardDiv,
+      img,
+      angle,
+      radius,
+      depth,
+      orbitSpeed: randRange(0.15, 0.35),
+      orbitOffset: randRange(0, Math.PI * 2),
+      baseZ
+    };
+
+    cardDiv.style.zIndex = baseZ;
+    cardState.baseZ = baseZ;  
+
+    activeCards.push(cardState);
+
+    // ----- Initial collapsed state -----
+    cardDiv.style.left = "50%";
+    cardDiv.style.top = "50%";
+    cardDiv.style.transform =
+      "translate(-50%, -50%) scale(BASE_SCALE)";  //  Set scale of init cards here
+    cardDiv.style.opacity = "0";
+
+    // ----- Animate outward -----
+    requestAnimationFrame(() => {
       const x = Math.cos(angle) * radius;
       const y = Math.sin(angle) * radius;
+      
+      
+      cardDiv.style.transition =
+        "transform 1s cubic-bezier(.16,1,.3,1), opacity 0.6s ease";
 
-      cardDiv.style.position = "absolute";
-      cardDiv.style.left = "50%";
-      cardDiv.style.top = "50%";
       cardDiv.style.transform =
-        `translate(-50%, -50%) translate(${x}px, ${y}px) scale(0.35)`;
-      cardDiv.style.transition = "transform 0.8s ease";
-    }
-  });
-}
+        `translate(-50%, -50%)
+         translate(${x}px, ${y}px)
+         scale(${BASE_SCALE * (0.85 + depth * 0.15)})`;
 
-function layoutCircle(cards) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const minDim = Math.min(vw, vh);
-  const radius = Math.min(minDim * 0.35, 420);
+      cardDiv.style.opacity = "1";
+    });
 
-  const centerX = vw / 2;
-  const centerY = vh / 2;
+    // ----- Hover tilt -----
+    cardDiv.addEventListener("mousemove", e => {
+      cardDiv.style.zIndex = 1000; // brings to front
+      cardDiv.style.filter = "brightness(1.25)";
 
-  cards.forEach((card, i) => {
-    const angle = (index / filtered.length) * Math.PI * 2;
+      const r = cardDiv.getBoundingClientRect();
+      const dx = (e.clientX - r.left) / r.width - 0.5;
+      const dy = (e.clientY - r.top) / r.height - 0.5;
 
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
+      img.style.transform =
+        `rotateX(${-dy * 10}deg)
+         rotateY(${dx * 10}deg)
+         scale(${BASE_SCALE * 1.33})`;
+    });
 
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
+    cardDiv.addEventListener("mouseleave", () => {
+    cardDiv.style.filter = "brightness(1.00)";
 
-    cardDiv.style.position = "absolute";
-    cardDiv.style.left = `${cx}px`;
-    cardDiv.style.top = `${cy}px`;
-    cardDiv.style.transform =
-      `translate(-50%, -50%) translate(${x}px, ${y}px) scale(0.35)`;
-    cardDiv.style.transition = "transform 0.8s ease";
+      img.style.transform = "";
+      cardDiv.style.zIndex = cardState.baseZ;
+    });
+
+    cardDiv.addEventListener("click", () => openOverlay(card.file));
   });
 }
 
 window.addEventListener("resize", () => {
-  if (cardLibrary.classList.contains("circle")) {
-    layoutCircle(activeCards);
-  }
+  if (!library.classList.contains("circle")) return;
+
+  const BASE_RADIUS = 0.25;
+
+  activeCards.forEach(card => {
+    card.radius =
+      Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
+  });
 });
 
-//  Button Logic (Based on class buttons)
+/* =====================
+   CLASS BUTTONS
+===================== */
 document.querySelectorAll("#class-select button").forEach(btn => {
   btn.addEventListener("click", () => {
-    const selectedClass = btn.dataset.class;
+    const cls = btn.dataset.class;
 
-    if (!hasStarted) {
-      hasStarted = true;
-      document.body.classList.add("started");
+    document.body.classList.add("started");
+    appState.started = true;
+    appState.activeClass = cls;
+    appState.layout = "circle";
 
-      setLibraryMode("circle");
-      renderCards(selectedClass, true);
-
-    } else {
-      if (selectedClass === "all") {
-        setLibraryMode("horizontal");
-      } else {
-        setLibraryMode("grid");
-      }
-      
-      renderCards(selectedClass);
-    }
-
-    
+    renderCircle(cls);
 
     document
       .querySelectorAll("#class-select button")
       .forEach(b => b.classList.remove("active"));
-
     btn.classList.add("active");
   });
 });
 
-const overlayCard = overlay.querySelector(".overlay-card");
-const MAX_TILT = 10;
-
-//  Tilt with Glint effect
-function overlayTilt(e) {
-  const rect = overlayCard.getBoundingClientRect();
-
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const px = (x / rect.width) - 0.5;
-  const py = (y / rect.height) - 0.5;
-
-  const rotateY = clamp(px * MAX_TILT * 2, -MAX_TILT, MAX_TILT);
-  const rotateX = clamp(-py * MAX_TILT * 2, -MAX_TILT, MAX_TILT);
-
-  overlayCard.style.transform =
-    `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-
-  // Glint follows tilt, not raw mouse
-  glint.style.backgroundPosition = `
-    ${50 + rotateY * 4}% 
-    ${50 - rotateX * 4}%
-  `;
-}
-
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function resetOverlayTilt() {
-  overlayCard.style.transition = "transform 0.3s ease";
-  glint.style.transition = "background-position 0.3s ease";
-
-  overlayCard.style.transform =
-    "rotateX(0deg) rotateY(0deg) scale(1.05)";
-  glint.style.backgroundPosition = "50% 50%";
-
-  // Remove transition after it finishes so movement stays snappy
-  setTimeout(() => {
-    overlayCard.style.transition = "";
-    glint.style.transition = "";
-  }, 300);
-}
-
-// --- Functions to show/hide overlay ---
-function openCardPreview(filename) {
-  overlayImg.src = `cards/${filename}`;
+/* =====================
+   OVERLAY
+===================== */
+function openOverlay(file) {
+  overlayImg.src = `cards/${file}`;
   overlay.classList.add("active");
-  document.body.style.overflow = "hidden"; // disable scroll while overlay active
-
-  // Reset rotation
-  overlayImg.style.transform = "rotateX(0) rotateY(0) scale(1.05)";
-  glint.style.backgroundPosition = "50% 50%";
-  
 
   overlayCard.addEventListener("mousemove", overlayTilt);
-  overlayCard.addEventListener("mouseleave", resetOverlayTilt);
 }
 
-function closeCardPreview() {
+function overlayTilt(e) {
+  const r = overlayCard.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width - 0.5;
+  const py = (e.clientY - r.top) / r.height - 0.5;
+
+  overlayCard.style.transform =
+    `rotateX(${-py * 12}deg) rotateY(${px * 12}deg) scale(1.05)`;
+
+  glint.style.backgroundPosition =
+    `${50 + px * 20}% ${50 + py * 20}%`;
+}
+
+overlay.addEventListener("click", () => {
   overlay.classList.remove("active");
-  document.body.style.overflow = "auto"; // restore scroll
+  overlayCard.style.transform = "";
+});
 
-  // Remove tilt listener
-  overlay.removeEventListener("mousemove", overlayTilt);
-  overlayCard.removeEventListener("mouseleave", resetOverlayTilt);
+overlayCard.addEventListener("click", e => e.stopPropagation());
 
-  resetOverlayTilt();
+/* =====================
+   HELPERS
+===================== */
+function randRange(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
-library.classList.add("grid");
-//renderCards();
-// Close overlay when clicked anywhere
-overlay.addEventListener("click", closeCardPreview);
-overlayCard.addEventListener("click", e => e.stopPropagation());
+/* =====================
+   ORBITING IDLE ANIM
+===================== */
+function updateOrbit(dt) {
+  orbitTime += dt;
+
+  activeCards.forEach(card => {
+    const orbit =
+      Math.sin(orbitTime * card.orbitSpeed + card.orbitOffset) * 12;
+
+    const x = Math.cos(card.angle) * (card.radius + orbit);
+    const y = Math.sin(card.angle) * (card.radius + orbit * 0.6);
+
+    card.el.style.transform =
+      `translate(-50%, -50%)
+       translate(${x}px, ${y}px)
+       scale(${BASE_SCALE * card.depth})`;
+  });
+}
+
+let lastTime = performance.now();
+function animate(t) {
+  const dt = (t - lastTime) / 1000;
+  lastTime = t;
+
+  if (library.classList.contains("circle")) {
+    updateOrbit(dt);
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* =====================
+   DEPTH PARALAX
+===================== */
+window.addEventListener("mousemove", e => {
+  if (!library.classList.contains("circle")) return;
+
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+
+  const dx = (e.clientX - cx) / cx;
+  const dy = (e.clientY - cy) / cy;
+
+  activeCards.forEach(card => {
+    const parallaxX = dx * 25 * card.depth;
+    const parallaxY = dy * 20 * card.depth;
+
+    card.el.style.marginLeft = `${parallaxX}px`;
+    card.el.style.marginTop = `${parallaxY}px`;
+  });
+});
