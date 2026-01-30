@@ -86,7 +86,7 @@ const glint = overlay.querySelector(".glint");
 let activeCards = [];
 let orbitTime = 0;
 
-const BASE_SCALE = 0.95;
+const BASE_SCALE = 1.3;
 
 /* =====================
    APP STATE
@@ -96,6 +96,19 @@ const appState = {
   activeClass: null,
   layout: "hidden"
 };
+
+/* =====================
+   CLASS BUTTON FLOAT
+===================== */
+const classButtons = [...document.querySelectorAll("#class-select .deck-btn")];
+
+const buttonFloatState = classButtons.map(btn => ({
+  el: btn,
+  offsetX: randRange(-1, 1),
+  offsetY: randRange(-1, 1),
+  speed: randRange(0.4, 0.8),
+  phase: randRange(0, Math.PI * 2)
+}));
 
 /* =====================
    RENDER CARDS (CIRCLE)
@@ -182,7 +195,7 @@ function renderCircle(className) {
       img.style.transform =
         `rotateX(${-dy * 10}deg)
          rotateY(${dx * 10}deg)
-         scale(${BASE_SCALE * 1.33})`;
+         scale(${BASE_SCALE * 1.01})`;
     });
 
     cardDiv.addEventListener("mouseleave", () => {
@@ -247,7 +260,7 @@ function overlayTilt(e) {
     `rotateX(${-py * 12}deg) rotateY(${px * 12}deg) scale(1.05)`;
 
   glint.style.backgroundPosition =
-    `${50 + px * 20}% ${50 + py * 20}%`;
+    `${50 + px * 25}% ${50 + py * 25}%`;
 }
 
 overlay.addEventListener("click", () => {
@@ -264,6 +277,20 @@ function randRange(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+function updateButtonFloat(dt) {
+  if (appState.started) return; // stop floating once a class is chosen
+
+  buttonFloatState.forEach(btn => {
+    btn.phase += dt * btn.speed;
+
+    const floatX = Math.sin(btn.phase) * 6;
+    const floatY = Math.cos(btn.phase * 0.9) * 8;
+
+    btn.el.style.transform =
+      `translate(${floatX}px, ${floatY}px)`;
+  });
+}
+
 /* =====================
    ORBITING IDLE ANIM
 ===================== */
@@ -272,7 +299,7 @@ function updateOrbit(dt) {
 
   activeCards.forEach(card => {
     const orbit =
-      Math.sin(orbitTime * card.orbitSpeed + card.orbitOffset) * 12;
+      Math.sin(orbitTime * card.orbitSpeed + card.orbitOffset) * 24;
 
     const x = Math.cos(card.angle) * (card.radius + orbit);
     const y = Math.sin(card.angle) * (card.radius + orbit * 0.6);
@@ -288,6 +315,8 @@ let lastTime = performance.now();
 function animate(t) {
   const dt = (t - lastTime) / 1000;
   lastTime = t;
+
+  updateButtonFloat(dt); // Make class buttons float
 
   if (library.classList.contains("circle")) {
     updateOrbit(dt);
