@@ -86,6 +86,9 @@ const glint = overlay.querySelector(".glint");
 let activeCards = [];
 let orbitTime = 0;
 
+let overlayIndex = 0;
+let overlayCards = [];
+
 const BASE_SCALE = 1.3;
 
 /* =====================
@@ -116,7 +119,7 @@ const buttonFloatState = classButtons.map(btn => ({
 function renderCircle(className) {
   library.innerHTML = "";
   library.className = "circle";
-  activeCards = []; // ✅ RESET STATE
+  activeCards = []; // RESET STATE
 
   const filtered = cards.filter(c => c.classes.includes(className));
   const count = filtered.length;
@@ -186,7 +189,7 @@ function renderCircle(className) {
     // ----- Hover tilt -----
     cardDiv.addEventListener("mousemove", e => {
       cardDiv.style.zIndex = 1000; // brings to front
-      cardDiv.style.filter = "brightness(1.25)";
+      cardDiv.style.filter = "brightness(1.1)";
 
       const r = cardDiv.getBoundingClientRect();
       const dx = (e.clientX - r.left) / r.width - 0.5;
@@ -225,6 +228,7 @@ window.addEventListener("resize", () => {
 ===================== */
 document.querySelectorAll("#class-select button").forEach(btn => {
   btn.addEventListener("click", () => {
+    document.body.classList.add("class-locked");
     const cls = btn.dataset.class;
 
     document.body.classList.add("started");
@@ -245,10 +249,35 @@ document.querySelectorAll("#class-select button").forEach(btn => {
    OVERLAY
 ===================== */
 function openOverlay(file) {
-  overlayImg.src = `cards/${file}`;
+  // Use currently active cards (already filtered by class)
+  overlayCards = activeCards.map(c => c.img.src);
+  overlayIndex = overlayCards.findIndex(src => src.includes(file));
+
+  overlayImg.src = overlayCards[overlayIndex];
   overlay.classList.add("active");
 
   overlayCard.addEventListener("mousemove", overlayTilt);
+  window.addEventListener("wheel", overlayScroll, { passive: false });
+  window.addEventListener("keydown", overlayKeys);
+}
+
+function cycleOverlay(dir) {
+  overlayIndex =
+    (overlayIndex + dir + overlayCards.length) % overlayCards.length;
+
+  overlayImg.src = overlayCards[overlayIndex];
+}
+
+function overlayScroll(e) {
+  e.preventDefault();
+
+  if (e.deltaY > 0) cycleOverlay(1);
+  else cycleOverlay(-1);
+}
+
+function overlayKeys(e) {
+  if (e.key === "ArrowRight") cycleOverlay(1);
+  if (e.key === "ArrowLeft") cycleOverlay(-1);
 }
 
 function overlayTilt(e) {
@@ -266,6 +295,9 @@ function overlayTilt(e) {
 overlay.addEventListener("click", () => {
   overlay.classList.remove("active");
   overlayCard.style.transform = "";
+
+  window.removeEventListener("wheel", overlayScroll);
+  window.removeEventListener("keydown", overlayKeys);
 });
 
 overlayCard.addEventListener("click", e => e.stopPropagation());
