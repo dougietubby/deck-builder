@@ -1,0 +1,2 @@
+Install npm (Javascript package manager)
+run 'npm install @supabase/supabase-js'
