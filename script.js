@@ -261,14 +261,37 @@ function overlayKeys(e){
 
 function overlayTilt(e){
   const r = overlayCard.getBoundingClientRect();
-  const px = (e.clientX - r.left) / r.width - 0.5;
-  const py = (e.clientY - r.top) / r.height - 0.5;
 
-  overlayCard.style.transform =
-    `rotateX(${-py*12}deg) rotateY(${px*12}deg) scale(1.05)`;
+  // Normalized mouse position (0 → 1)
+  const px = (e.clientX - r.left) / r.width;
+  const py = (e.clientY - r.top) / r.height;
 
-  glint.style.backgroundPosition =
-    `${50+px*25}% ${50+py*25}%`;
+  // Convert to -0.5 → +0.5 (centered)
+  const cx = px - 0.5;
+  const cy = py - 0.5;
+
+  // ---- Rotation ----
+  const rotY = cx * 12;   // left/right tilt
+  const rotX = -cy * 12;  // up/down tilt
+
+  // ---- Fake Depth Push ----
+  const depth = (Math.abs(cx) + Math.abs(cy)) * 18;
+
+  overlayCard.style.transform = `
+    perspective(1200px)
+    rotateX(${rotX}deg)
+    rotateY(${rotY}deg)
+    translateZ(${depth}px)
+    scale(1.04)
+  `;
+
+  // ---- Glint follows mouse ----
+  glint.style.backgroundPosition = `${px*100}% ${py*100}%`;
+
+  // Slight glint drift = realism
+  glint.style.transform = `
+    translate(${cx*40}px, ${cy*40}px)
+  `;
 }
 
 overlay.addEventListener("click", () => {
