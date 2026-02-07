@@ -77,171 +77,152 @@ const cards = [
   { file: "aegis_aura.webp", classes: ["rogue"] }
 ];
 
+/* =====================
+   DOM CACHE
+===================== */
 const library = document.getElementById("card-library");
 const overlay = document.getElementById("overlay");
 const overlayImg = document.getElementById("overlay-img");
 const overlayCard = overlay.querySelector(".overlay-card");
 const glint = overlay.querySelector(".glint");
 
+const classButtons = [...document.querySelectorAll(".deck-btn")];
+
+/* =====================
+   CONSTANTS
+===================== */
+const BASE_SCALE = 1.3;
+const BASE_RADIUS = 0.25;
+
+/* =====================
+   STATE
+===================== */
 let activeCards = [];
 let orbitTime = 0;
 
-let overlayIndex = 0;
 let overlayCards = [];
-
-const BASE_SCALE = 1.3;
-
-/* =====================
-   APP STATE
-===================== */
-const appState = {
-  started: false,
-  activeClass: null,
-  layout: "hidden"
-};
+let overlayIndex = 0;
 
 /* =====================
-   CLASS BUTTON FLOAT
+   HELPERS
 ===================== */
-const classButtons = [...document.querySelectorAll("#class-select .deck-btn")];
+const randRange = (min, max) => Math.random() * (max - min) + min;
 
+const getRadius = () =>
+  Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
+
+/* =====================
+   BUTTON FLOAT
+===================== */
 const buttonFloatState = classButtons.map(btn => ({
   el: btn,
-  offsetX: randRange(-1, 1),
-  offsetY: randRange(-1, 1),
   speed: randRange(0.4, 0.8),
   phase: randRange(0, Math.PI * 2)
 }));
 
+function updateButtonFloat(dt) {
+  if (document.body.classList.contains("started")) return;
+
+  buttonFloatState.forEach(b => {
+    b.phase += dt * b.speed;
+    b.el.style.transform =
+      `translate(${Math.sin(b.phase)*6}px, ${Math.cos(b.phase*0.9)*8}px)`;
+  });
+}
+
 /* =====================
-   RENDER CARDS (CIRCLE)
+   RENDER CARDS
 ===================== */
 function renderCircle(className) {
+
   library.innerHTML = "";
   library.className = "circle";
-  activeCards = []; // RESET STATE
+  activeCards = [];
 
   const filtered = cards.filter(c => c.classes.includes(className));
-  const count = filtered.length;
+  const radius = getRadius();
 
-  //  Radius size / scale
-  
-  const BASE_RADIUS = 0.25;
-  const radius = Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
-
-  //  Render cards
   filtered.forEach((card, i) => {
-    const angle = (i / count) * Math.PI * 2;
+
     const depth = randRange(0.8, 1.2);
 
-    const cardDiv = document.createElement("div");
-    cardDiv.className = "card";
+    const el = document.createElement("div");
+    el.className = "card";
 
     const img = document.createElement("img");
     img.src = `cards/${card.file}`;
 
-    cardDiv.appendChild(img);
-    library.appendChild(cardDiv);
+    el.appendChild(img);
+    library.appendChild(el);
 
-    // ----- Store orbital state -----
-    const baseZ = Math.floor(depth * 100);
-
-    const cardState = {
-      el: cardDiv,
+    const state = {
+      el,
       img,
-      angle,
-      radius,
       depth,
+      radius,
+      angle: (i / filtered.length) * Math.PI * 2,
       orbitSpeed: randRange(0.15, 0.35),
       orbitOffset: randRange(0, Math.PI * 2),
-      baseZ
+      baseZ: Math.floor(depth * 100)
     };
 
-    cardDiv.style.zIndex = baseZ;
-    cardState.baseZ = baseZ;  
+    el.style.zIndex = state.baseZ;
+    activeCards.push(state);
 
-    activeCards.push(cardState);
+    // spawn animation
+    el.style.left = "50%";
+    el.style.top = "50%";
+    el.style.opacity = "0";
+    el.style.transform = "translate(-50%, -50%) scale(0.8)";
 
-    // ----- Initial collapsed state -----
-    cardDiv.style.left = "50%";
-    cardDiv.style.top = "50%";
-    cardDiv.style.transform =
-      "translate(-50%, -50%) scale(BASE_SCALE)";  //  Set scale of init cards here
-    cardDiv.style.opacity = "0";
-
-    // ----- Animate outward -----
     requestAnimationFrame(() => {
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      
-      
-      cardDiv.style.transition =
+      const x = Math.cos(state.angle) * radius;
+      const y = Math.sin(state.angle) * radius;
+
+      el.style.transition =
         "transform 1s cubic-bezier(.16,1,.3,1), opacity 0.6s ease";
 
-      cardDiv.style.transform =
-        `translate(-50%, -50%)
-         translate(${x}px, ${y}px)
-         scale(${BASE_SCALE * (0.85 + depth * 0.15)})`;
+      el.style.transform =
+        `translate(-50%, -50%) translate(${x}px,${y}px) scale(${BASE_SCALE*state.depth})`;
 
-      cardDiv.style.opacity = "1";
+      el.style.opacity = "1";
     });
 
-    // ----- Hover tilt -----
-    cardDiv.addEventListener("mousemove", e => {
-      cardDiv.style.zIndex = 1000; // brings to front
-      cardDiv.style.filter = "brightness(1.1)";
+    /* Hover tilt */
+    el.addEventListener("mousemove", e => {
+      el.style.zIndex = 1000;
+      el.style.filter = "brightness(1.1)";
 
-      const r = cardDiv.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
       const dx = (e.clientX - r.left) / r.width - 0.5;
       const dy = (e.clientY - r.top) / r.height - 0.5;
 
       img.style.transform =
-        `rotateX(${-dy * 10}deg)
-         rotateY(${dx * 10}deg)
-         scale(${BASE_SCALE * 1.01})`;
+        `rotateX(${-dy*10}deg) rotateY(${dx*10}deg) scale(${BASE_SCALE})`;
     });
 
-    cardDiv.addEventListener("mouseleave", () => {
-    cardDiv.style.filter = "brightness(1.00)";
-
+    el.addEventListener("mouseleave", () => {
+      el.style.filter = "";
+      el.style.zIndex = state.baseZ;
       img.style.transform = "";
-      cardDiv.style.zIndex = cardState.baseZ;
     });
 
-    cardDiv.addEventListener("click", () => openOverlay(card.file));
+    el.addEventListener("click", () => openOverlay(card.file));
   });
 }
-
-window.addEventListener("resize", () => {
-  if (!library.classList.contains("circle")) return;
-
-  const BASE_RADIUS = 0.25;
-
-  activeCards.forEach(card => {
-    card.radius =
-      Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
-  });
-});
 
 /* =====================
    CLASS BUTTONS
 ===================== */
-document.querySelectorAll("#class-select button").forEach(btn => {
+classButtons.forEach(btn => {
   btn.addEventListener("click", () => {
-    document.body.classList.add("class-locked");
-    const cls = btn.dataset.class;
 
-    document.body.classList.add("started");
-    appState.started = true;
-    appState.activeClass = cls;
-    appState.layout = "circle";
+    document.body.classList.add("started", "class-locked");
 
-    renderCircle(cls);
-
-    document
-      .querySelectorAll("#class-select button")
-      .forEach(b => b.classList.remove("active"));
+    classButtons.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
+
+    renderCircle(btn.dataset.class);
   });
 });
 
@@ -249,7 +230,7 @@ document.querySelectorAll("#class-select button").forEach(btn => {
    OVERLAY
 ===================== */
 function openOverlay(file) {
-  // Use currently active cards (already filtered by class)
+
   overlayCards = activeCards.map(c => c.img.src);
   overlayIndex = overlayCards.findIndex(src => src.includes(file));
 
@@ -257,7 +238,7 @@ function openOverlay(file) {
   overlay.classList.add("active");
 
   overlayCard.addEventListener("mousemove", overlayTilt);
-  window.addEventListener("wheel", overlayScroll, { passive: false });
+  window.addEventListener("wheel", overlayScroll, { passive:false });
   window.addEventListener("keydown", overlayKeys);
 }
 
@@ -268,28 +249,26 @@ function cycleOverlay(dir) {
   overlayImg.src = overlayCards[overlayIndex];
 }
 
-function overlayScroll(e) {
+function overlayScroll(e){
   e.preventDefault();
-
-  if (e.deltaY > 0) cycleOverlay(1);
-  else cycleOverlay(-1);
+  cycleOverlay(e.deltaY > 0 ? 1 : -1);
 }
 
-function overlayKeys(e) {
-  if (e.key === "ArrowRight") cycleOverlay(1);
-  if (e.key === "ArrowLeft") cycleOverlay(-1);
+function overlayKeys(e){
+  if(e.key==="ArrowRight") cycleOverlay(1);
+  if(e.key==="ArrowLeft") cycleOverlay(-1);
 }
 
-function overlayTilt(e) {
+function overlayTilt(e){
   const r = overlayCard.getBoundingClientRect();
   const px = (e.clientX - r.left) / r.width - 0.5;
   const py = (e.clientY - r.top) / r.height - 0.5;
 
   overlayCard.style.transform =
-    `rotateX(${-py * 12}deg) rotateY(${px * 12}deg) scale(1.05)`;
+    `rotateX(${-py*12}deg) rotateY(${px*12}deg) scale(1.05)`;
 
   glint.style.backgroundPosition =
-    `${50 + px * 25}% ${50 + py * 25}%`;
+    `${50+px*25}% ${50+py*25}%`;
 }
 
 overlay.addEventListener("click", () => {
@@ -303,78 +282,65 @@ overlay.addEventListener("click", () => {
 overlayCard.addEventListener("click", e => e.stopPropagation());
 
 /* =====================
-   HELPERS
+   ORBIT LOOP
 ===================== */
-function randRange(min, max) {
-  return Math.random() * (max - min) + min;
-}
+function updateOrbit(dt){
+  orbitTime += dt;
 
-function updateButtonFloat(dt) {
-  if (appState.started) return; // stop floating once a class is chosen
+  activeCards.forEach(c=>{
+    const orbit =
+      Math.sin(orbitTime*c.orbitSpeed + c.orbitOffset)*24;
 
-  buttonFloatState.forEach(btn => {
-    btn.phase += dt * btn.speed;
+    const x = Math.cos(c.angle)*(c.radius+orbit);
+    const y = Math.sin(c.angle)*(c.radius+orbit*0.6);
 
-    const floatX = Math.sin(btn.phase) * 6;
-    const floatY = Math.cos(btn.phase * 0.9) * 8;
-
-    btn.el.style.transform =
-      `translate(${floatX}px, ${floatY}px)`;
+    c.el.style.transform =
+      `translate(-50%,-50%) translate(${x}px,${y}px) scale(${BASE_SCALE*c.depth})`;
   });
 }
 
 /* =====================
-   ORBITING IDLE ANIM
+   MAIN LOOP
 ===================== */
-function updateOrbit(dt) {
-  orbitTime += dt;
+let last = performance.now();
 
-  activeCards.forEach(card => {
-    const orbit =
-      Math.sin(orbitTime * card.orbitSpeed + card.orbitOffset) * 24;
+function animate(t){
+  const dt = (t-last)/1000;
+  last = t;
 
-    const x = Math.cos(card.angle) * (card.radius + orbit);
-    const y = Math.sin(card.angle) * (card.radius + orbit * 0.6);
+  updateButtonFloat(dt);
 
-    card.el.style.transform =
-      `translate(-50%, -50%)
-       translate(${x}px, ${y}px)
-       scale(${BASE_SCALE * card.depth})`;
-  });
-}
-
-let lastTime = performance.now();
-function animate(t) {
-  const dt = (t - lastTime) / 1000;
-  lastTime = t;
-
-  updateButtonFloat(dt); // Make class buttons float
-
-  if (library.classList.contains("circle")) {
+  if(library.classList.contains("circle"))
     updateOrbit(dt);
-  }
 
   requestAnimationFrame(animate);
 }
+
 requestAnimationFrame(animate);
 
 /* =====================
-   DEPTH PARALAX
+   RESIZE
+===================== */
+window.addEventListener("resize", ()=>{
+  const r = getRadius();
+  activeCards.forEach(c=> c.radius = r);
+});
+
+/* =====================
+   PARALLAX
 ===================== */
 window.addEventListener("mousemove", e => {
-  if (!library.classList.contains("circle")) return;
 
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
+  if(!library.classList.contains("circle")) return;
 
-  const dx = (e.clientX - cx) / cx;
-  const dy = (e.clientY - cy) / cy;
+  const cx = innerWidth/2;
+  const cy = innerHeight/2;
 
-  activeCards.forEach(card => {
-    const parallaxX = dx * 25 * card.depth;
-    const parallaxY = dy * 20 * card.depth;
+  const dx = (e.clientX-cx)/cx;
+  const dy = (e.clientY-cy)/cy;
 
-    card.el.style.marginLeft = `${parallaxX}px`;
-    card.el.style.marginTop = `${parallaxY}px`;
+  activeCards.forEach(c=>{
+    c.el.style.marginLeft = dx*25*c.depth+"px";
+    c.el.style.marginTop  = dy*20*c.depth+"px";
   });
 });

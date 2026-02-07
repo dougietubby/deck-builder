@@ -3,46 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <title>Deck Creator</title>
-
-  <!-- Google Font: Jacquard 12 -->
-  <!--<link href="https://fonts.googleapis.com/css2?family=Jacquard+12&display=swap" rel="stylesheet">-->
-
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+
 <div id="stars"></div>
 <div id="stars2"></div>
 <div id="stars3"></div>
-<div id="nebula"></div>
-<!-- <div id="fog"></div> -->
-<!-- <div id="fog2"></div> -->
+
 <div id="class-select-wrapper">
   <div id="class-select">
 
-  <div class="class-btn-wrap" data-desc="Study fighter. Heavy armour and damage.">
-    <button data-class="knight" class="deck-btn">
-      <img src="cards/class_knight.webp" alt="Knight Deck">
-    </button>
-  </div>
+    <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
+      <button data-class="knight" class="deck-btn">
+        <img src="cards/knight-icon.webp" alt="Knight Deck">
+      </button>
+    </div>
 
-  <div class="class-btn-wrap" data-desc="High damage spellcaster. Contant pressure but fragile.">
-    <button data-class="mage" class="deck-btn">
-      <img src="cards/class_mage.webp" alt="Mage Deck">
-    </button>
-  </div>
+    <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
+      <button data-class="mage" class="deck-btn">
+        <img src="cards/mage-icon.webp" alt="Mage Deck">
+      </button>
+    </div>
 
-  <div class="class-btn-wrap" data-desc="Control the fight, if you know what you're doing.">
-    <button data-class="rogue" class="deck-btn">
-      <img src="cards/class_rogue.webp" alt="Rogue Deck">
-    </button>
-  </div>
+    <div class="class-btn-wrap" data-desc="ROGUE: Control the fight, if you're skilled.">
+      <button data-class="rogue" class="deck-btn">
+        <img src="cards/rogue-icon.webp" alt="Rogue Deck">
+      </button>
+    </div>
 
   </div>
 </div>
-  <h1>Who are You?</h1>
-  <div id="card-library"></div>
 
-  <!-- overlay is last so it layers above everything -->
+<h1>Who are You?</h1>
+
+<div id="card-library"></div>
+
 <div id="overlay">
   <div class="overlay-card">
     <img id="overlay-img">
@@ -50,6 +47,6 @@
   </div>
 </div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
