@@ -25,6 +25,12 @@ body {
   image-rendering:pixelated;
 }
 
+body.locked #class-select-wrapper,
+body.locked h1,
+body.locked #card-library {
+  display: none;
+}
+
 body::after {
   content:"";
   position:fixed;
@@ -45,7 +51,7 @@ h1 {
   font-family:"Jacquard 12";
   letter-spacing:.1em;
   text-align:center;
-  margin:240px 0 16px;
+  margin:300px 0 16px;
 }
 
 body.started h1 {

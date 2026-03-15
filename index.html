@@ -4,6 +4,26 @@
   <meta charset="UTF-8" />
   <title>Deck Creator</title>
   <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+  <script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+
+    await OneSignal.init({
+      appId: "e1d1cb65-fbf0-4a1f-a9d4-dcc90642cb28",
+
+      notifyButton: {
+        enable: true
+      },
+
+      allowLocalhostAsSecureOrigin: true
+    });
+
+  });
+</script>
+
 </head>
 
 <body>
@@ -11,6 +31,11 @@
 <div id="stars"></div>
 <div id="stars2"></div>
 <div id="stars3"></div>
+
+<!-- <div id="login-screen">
+  <input type="email" id="email-input" placeholder="Enter email">
+  <button id="login-btn">Enter Grove</button>
+</div> -->
 
 <div id="class-select-wrapper">
   <div id="class-select">
@@ -47,6 +72,7 @@
   </div>
 </div>
 
+<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
 <script src="script.js"></script>
 </body>
 </html>

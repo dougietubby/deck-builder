@@ -1,3 +1,6 @@
+/* document.body.classList.add("locked"); */
+
+//#region Card lib
 const cards = [
   { file: "angelic_totem.webp", classes: [] },
   { file: "arcane_barrier.webp", classes: [] },
@@ -76,6 +79,117 @@ const cards = [
   { file: "wailing_curse.webp", classes: ["rogue"] },
   { file: "aegis_aura.webp", classes: ["rogue"] }
 ];
+//#endregion
+
+/* const supabaseUrl = "https://vtgdwihretrnmjnalfxd.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0Z2R3aWhyZXRybm1qbmFsZnhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzI1NjAsImV4cCI6MjA4Njc0ODU2MH0.J5ClsAfN7F0bA5fAyT04Aege3amYPxloXBGprBvkH-Y";
+
+if (!window._supabaseClient) {
+  window._supabaseClient = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+  );
+}
+
+var supabase = window._supabaseClient;
+ */
+// ----------------------------
+// PROFILE CREATION
+// ----------------------------
+/* async function ensureProfile(user) {
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (error && error.code === "PGRST116") {
+
+    await supabase.from("profiles").insert([
+      {
+        id: user.id,
+        display_name: user.email.split("@")[0]
+      }
+    ]);
+
+  }
+}
+ */
+// ----------------------------
+// AUTH STATE LISTENER
+// ----------------------------
+/* supabase.auth.onAuthStateChange(async (event, session) => {
+
+  if (session?.user) {
+    await ensureProfile(session.user);
+    unlockApp();
+  } else {
+    lockApp();
+  }
+
+}); */
+
+// ----------------------------
+// LOGIN FUNCTION (Dev + Prod ready)
+// ----------------------------
+/* async function login(email) {
+  if (!email) {
+    alert("Enter an email.");
+    return;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase(); */
+
+/*   // Determine Edge Function URL based on environment
+  const EDGE_FUNCTION_URL =
+  "https://vtgdwihretrnmjnalfxd.functions.supabase.co/validate_whitelist"; */
+
+  // Call Edge Function using Supabase client
+  /* const { data, error: functionError } =
+    await supabase.functions.invoke("validate_whitelist", {
+      body: { email: normalizedEmail }
+    });
+
+  if (functionError || !data?.ok) {
+    alert("You are not approved for Grove access.");
+    return;
+  }
+
+    // Send magic link
+    const { error } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail
+    });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Magic link sent!");
+    }
+  } */
+
+// ----------------------------
+// UI LOCKING
+// ----------------------------
+/* function lockApp() {
+  document.body.classList.add("locked");
+}
+
+function unlockApp() {
+  document.body.classList.remove("locked");
+} */
+
+// ----------------------------
+// LOGIN BUTTON
+// ----------------------------
+/* document.getElementById("login-btn")
+  .addEventListener("click", () => {
+
+    const email = document.getElementById("email-input").value;
+    login(email);
+
+}); */
+
 
 /* =====================
    DOM CACHE
