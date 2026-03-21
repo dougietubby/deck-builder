@@ -13,6 +13,61 @@
   font-display: swap;
 }
 
+/* Onboarding buttons */
+#onboarding {
+  position:fixed;
+  inset:0;
+  background:rgba(5,5,10,.85);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.onboard-box {
+  width:320px;
+  padding:24px;
+  border-radius:14px;
+  background:rgba(20,16,30,.95);
+  border:1px solid rgba(160,120,255,.25);
+  text-align:center;
+  font-family:'Pixel Sans';
+}
+
+.onboard-box h2 {
+  font-family:"Jacquard 12";
+  margin-bottom:12px;
+}
+
+.onboard-box button {
+  width:100%;
+  margin:8px 0;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#6a4cff;
+  color:white;
+  font-family:'Pixel Sans';
+  cursor:pointer;
+}
+
+.hint {
+  font-size:13px;
+  opacity:.7;
+  margin-top:6px;
+}
+
+#codeInput {
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:10px;
+  text-align:center;
+  font-family:'Pixel Sans';
+}
+
 /* =====================
    BASE
 ===================== */

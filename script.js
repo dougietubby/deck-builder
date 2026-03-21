@@ -1,5 +1,73 @@
 /* document.body.classList.add("locked"); */
 
+/* Onboarding Area */
+//#region Onboarding
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+document.getElementById("installBtn").onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+  } else {
+    // iOS fallback
+    document.getElementById("iosHint").style.display = "block";
+  }
+};
+
+const GROVE_CODE = "Grove2026"; //  Move to supabase or edgefunciton later
+
+document.getElementById("verifyBtn").onclick = () => {
+  const input = document.getElementById("codeInput").value.trim();
+
+  if (input === GROVE_CODE) {
+
+    localStorage.setItem("grove_verified", "true");
+
+    OneSignalDeferred.push(async function(OneSignal) {
+      OneSignal.User.addTag("grove_member", "true");
+    });
+
+    alert("Welcome to the Grove 🌲");
+
+  } else {
+    alert("The forest does not recognize you...");
+  }
+};
+
+if (localStorage.getItem("grove_verified") === "true") {
+  OneSignalDeferred.push(async function(OneSignal) {
+    OneSignal.User.addTag("grove_member", "true");
+  });
+
+  document.getElementById("onboarding").style.display = "none";
+}
+
+document.getElementById("notifyBtn").onclick = async () => {
+
+  const permission = await Notification.requestPermission();
+
+  if (permission === "granted") {
+    console.log("Notifications enabled");
+  } else {
+    alert("Notifications are required for Grove alerts.");
+  }
+};
+
+document.getElementById("enterBtn").onclick = () => {
+  document.getElementById("onboarding").style.display = "none";
+};
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+if (!isIOS) {
+  document.getElementById("iosHint").style.display = "none";
+}
+//#endregion
+
 //#region Card lib
 const cards = [
   { file: "angelic_totem.webp", classes: [] },
@@ -80,6 +148,8 @@ const cards = [
   { file: "aegis_aura.webp", classes: ["rogue"] }
 ];
 //#endregion
+
+//#region OLD supabase
 
 /* const supabaseUrl = "https://vtgdwihretrnmjnalfxd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0Z2R3aWhyZXRybm1qbmFsZnhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzI1NjAsImV4cCI6MjA4Njc0ODU2MH0.J5ClsAfN7F0bA5fAyT04Aege3amYPxloXBGprBvkH-Y";
@@ -189,7 +259,7 @@ function unlockApp() {
     login(email);
 
 }); */
-
+//#endregion
 
 /* =====================
    DOM CACHE
@@ -247,6 +317,7 @@ function updateButtonFloat(dt) {
 /* =====================
    RENDER CARDS
 ===================== */
+//#region Render Cards
 function renderCircle(className) {
 
   library.innerHTML = "";
@@ -324,10 +395,13 @@ function renderCircle(className) {
     el.addEventListener("click", () => openOverlay(card.file));
   });
 }
+//#endregion
+
 
 /* =====================
    CLASS BUTTONS
 ===================== */
+//#region CLASS buttons
 classButtons.forEach(btn => {
   btn.addEventListener("click", () => {
 
@@ -339,10 +413,12 @@ classButtons.forEach(btn => {
     renderCircle(btn.dataset.class);
   });
 });
+//#endregion
 
 /* =====================
    OVERLAY
 ===================== */
+//#region Overlay
 function openOverlay(file) {
 
   overlayCards = activeCards.map(c => c.img.src);
@@ -417,6 +493,7 @@ overlay.addEventListener("click", () => {
 });
 
 overlayCard.addEventListener("click", e => e.stopPropagation());
+//#endregion
 
 /* =====================
    ORBIT LOOP
