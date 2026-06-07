@@ -17,6 +17,15 @@ const libraryScreen =
 
 let deferredPrompt = null;
 
+function isRunningAsPWA() {
+
+  return window.matchMedia(
+    "(display-mode: standalone)"
+  ).matches
+  || window.navigator.standalone === true;
+
+}
+
 /* -------------------------
    INSTALL
 ------------------------- */
@@ -64,67 +73,74 @@ if (!isIOS) {
 /* -------------------------
    NOTIFICATIONS
 ------------------------- */
+/* -------------------------
+   ONESIGNAL SUBSCRIBE
+------------------------- */
 
-document
-  .getElementById("notifyBtn")
-  ?.addEventListener("click", async () => {
+let notificationsEnabled = false;
 
-    try {
+OneSignalDeferred.push(
+  async function(OneSignal) {
 
-      const camp =
-        localStorage.getItem(
-          "grove_camp"
+    OneSignal.User.addEventListener(
+      "change",
+      async () => {
+
+        const subscribed =
+          OneSignal.User.onesignalId != null;
+
+        console.log(
+          "Subscribed:",
+          subscribed
         );
 
-      OneSignalDeferred.push(
-        async function(OneSignal) {
+        if (!subscribed) {
+          return;
+        }
 
-          await OneSignal.Notifications.requestPermission();
-
-          const permission =
-            OneSignal.Notifications.permission;
-
-          if (permission !== "granted") {
-
-            alert(
-              "Notifications are recommended for Grove alerts."
-            );
-
-            return;
-          }
-
-          await OneSignal.User.addTag(
-            "grove_member",
-            "true"
+        const camp =
+          localStorage.getItem(
+            "grove_camp"
           );
 
-          if (camp) {
+        try {
 
-            await OneSignal.User.addTag(
-              "camp",
-              camp
-            );
+          await OneSignal.User.addTags({
+            grove_member: "true",
+            camp: camp || "unknown"
+          });
 
-          }
+          const tags =
+            await OneSignal.User.getTags();
 
           console.log(
-            "OneSignal tags applied."
+            "Tags:",
+            tags
           );
 
-          alert(
-            "Notifications enabled!"
+          notificationsEnabled = true;
+
+          document
+            .getElementById(
+              "continueBtn"
+            )
+            .disabled = false;
+
+        }
+        catch (err) {
+
+          console.error(
+            "Tag error:",
+            err
           );
 
         }
-      );
 
-    } catch (err) {
+      }
+    );
 
-      console.error(err);
-
-    }
-
-});
+  }
+);
 
 /* -------------------------
    SHOW LIBRARY
@@ -203,8 +219,23 @@ document
         verificationScreen.style.display =
           "none";
 
+        if (!isRunningAsPWA()) {
+
+          alert(
+            "The Grove has been verified.\n\nInstall it to your Home Screen and then reopen it from your Home Screen."
+          );
+
+          return;
+        }
+
         welcomeScreen.style.display =
           "flex";
+
+        document
+          .getElementById(
+            "continueBtn"
+          )
+          .disabled = true;
 
       } else {
 
@@ -233,6 +264,16 @@ document
 document
   .getElementById("continueBtn")
   .addEventListener("click", () => {
+
+    if (!notificationsEnabled) {
+
+      alert(
+        "Please enable notifications first."
+      );
+
+      return;
+
+    }
 
     localStorage.setItem(
       "grove_onboarded",
@@ -282,24 +323,9 @@ else {
       "grove_camp"
     );
 
-  OneSignalDeferred.push(
-    async function(OneSignal) {
-
-      await OneSignal.User.addTag(
-        "grove_member",
-        "true"
-      );
-
-      if (savedCamp) {
-
-        await OneSignal.User.addTag(
-          "camp",
-          savedCamp
-        );
-
-      }
-
-    }
+  console.log(
+    "Verified user:",
+    savedCamp
   );
 
   showLibrary();

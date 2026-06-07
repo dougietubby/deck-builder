@@ -52,6 +52,15 @@
   cursor:pointer;
 }
 
+.onesignal-customlink-container {
+  margin: 16px 0;
+}
+
+#continueBtn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
 .modal-screen {
   position: fixed;
   inset: 0;
