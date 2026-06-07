@@ -35,37 +35,6 @@
   font-family:'Pixel Sans';
 }
 
-/* =====================
-   COMPLETED BUTTONS
-===================== */
-
-.onboard-complete {
-  background:#2d8a53 !important;
-  color:white !important;
-
-  position:relative;
-}
-
-.onboard-complete::after {
-  content:"✓";
-  position:absolute;
-
-  right:12px;
-  top:50%;
-
-  transform:translateY(-50%);
-  font-weight:bold;
-}
-
-.onboard-complete:hover {
-  transform:none;
-  filter:none;
-}
-
-.onboard-complete:disabled {
-  opacity:1;
-}
-
 .onboard-box h2 {
   font-family:"Jacquard 12";
   margin-bottom:12px;
@@ -126,7 +95,6 @@
 #continueBtn:disabled {
   opacity: .4;
   cursor: not-allowed;
-  filter:grayscale(1);
 }
 
 .modal-screen {
