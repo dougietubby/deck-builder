@@ -15,8 +15,6 @@ const welcomeScreen =
 const libraryScreen =
   document.getElementById("libraryScreen");
 
-const GROVE_CODE = "Grove2026";
-
 let deferredPrompt = null;
 
 /* -------------------------
@@ -109,7 +107,7 @@ function showLibrary() {
 
 document
   .getElementById("verifyBtn")
-  .addEventListener("click", () => {
+  .addEventListener("click", async () => {
 
     const input =
       document
@@ -117,35 +115,74 @@ document
         .value
         .trim();
 
-    if (input === GROVE_CODE) {
+    try {
 
-      localStorage.setItem(
-        "grove_verified",
-        "true"
-      );
-
-      OneSignalDeferred.push(
-        async function(OneSignal) {
-
-          OneSignal.User.addTag(
-            "grove_member",
-            "true"
-          );
-
+      const response = await fetch(
+        "/api/verify",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            code: input
+          })
         }
       );
 
-      verificationScreen.style.display =
-        "none";
+      const result =
+        await response.json();
 
-      welcomeScreen.style.display =
-        "flex";
+      if (result.valid) {
 
-    } else {
+        localStorage.setItem(
+          "grove_verified",
+          "true"
+        );
+
+        localStorage.setItem(
+          "grove_camp",
+          result.camp
+        );
+
+        OneSignalDeferred.push(
+          async function(OneSignal) {
+
+            await OneSignal.User.addTag(
+              "grove_member",
+              "true"
+            );
+
+            await OneSignal.User.addTag(
+              "camp",
+              result.camp
+            );
+
+          }
+        );
+
+        verificationScreen.style.display =
+          "none";
+
+        welcomeScreen.style.display =
+          "flex";
+
+      } else {
+
+        alert(
+          "The forest does not recognize you..."
+        );
+
+      }
+
+    } catch (err) {
+
+      console.error(err);
 
       alert(
-        "The forest does not recognize you..."
+        "The Grove is unable to verify you right now."
       );
+
     }
 
 });
@@ -201,13 +238,27 @@ else if (!onboarded) {
 }
 else {
 
+  const savedCamp =
+    localStorage.getItem(
+      "grove_camp"
+    );
+
   OneSignalDeferred.push(
     async function(OneSignal) {
 
-      OneSignal.User.addTag(
+      await OneSignal.User.addTag(
         "grove_member",
         "true"
       );
+
+      if (savedCamp) {
+
+        await OneSignal.User.addTag(
+          "camp",
+          savedCamp
+        );
+
+      }
 
     }
   );
