@@ -15,6 +15,15 @@ const welcomeScreen =
 const libraryScreen =
   document.getElementById("libraryScreen");
 
+const installBtn =
+  document.getElementById("installBtn");
+
+const continueBtn =
+  document.getElementById("continueBtn");
+
+let installComplete = false;
+let notificationsComplete = false;
+
 let deferredPrompt = null;
 
 function isRunningAsPWA() {
@@ -26,9 +35,30 @@ function isRunningAsPWA() {
 
 }
 
+function updateContinueButton() {
+
+  continueBtn.disabled =
+    !installComplete ||
+    !notificationsComplete;
+}
+
+updateContinueButton();
+
 /* -------------------------
    INSTALL
 ------------------------- */
+
+if (isRunningAsPWA()) {
+
+  installComplete = true;
+
+  installBtn.classList.add(
+    "onboard-complete"
+  );
+
+  installBtn.textContent =
+    "Installed";
+}
 
 window.addEventListener("beforeinstallprompt", (e) => {
 
@@ -37,19 +67,31 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 });
 
-document
-  .getElementById("installBtn")
-  ?.addEventListener("click", async () => {
+installBtn?.addEventListener(
+  "click",
+  async () => {
 
     if (deferredPrompt) {
 
       await deferredPrompt.prompt();
 
-    } else {
+      installComplete = true;
+
+      installBtn.classList.add(
+        "onboard-complete"
+      );
+
+      installBtn.textContent =
+        "Installed";
+
+      updateContinueButton();
+    }
+    else {
 
       document
         .getElementById("iosHint")
         .style.display = "block";
+
     }
 
 });
@@ -228,6 +270,17 @@ document
           return;
         }
 
+        notificationsComplete = true;
+
+        notifyBtn.classList.add(
+          "onboard-complete"
+        );
+
+        notifyBtn.textContent =
+          "Notifications Enabled";
+
+        updateContinueButton();
+
         welcomeScreen.style.display =
           "flex";
 
@@ -240,7 +293,7 @@ document
       } else {
 
         alert(
-          "The forest does not recognize you..."
+          "The Grove does not recognize you..."
         );
 
       }

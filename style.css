@@ -35,6 +35,37 @@
   font-family:'Pixel Sans';
 }
 
+/* =====================
+   COMPLETED BUTTONS
+===================== */
+
+.onboard-complete {
+  background:#2d8a53 !important;
+  color:white !important;
+
+  position:relative;
+}
+
+.onboard-complete::after {
+  content:"✓";
+  position:absolute;
+
+  right:12px;
+  top:50%;
+
+  transform:translateY(-50%);
+  font-weight:bold;
+}
+
+.onboard-complete:hover {
+  transform:none;
+  filter:none;
+}
+
+.onboard-complete:disabled {
+  opacity:1;
+}
+
 .onboard-box h2 {
   font-family:"Jacquard 12";
   margin-bottom:12px;
@@ -52,13 +83,50 @@
   cursor:pointer;
 }
 
+/* =====================
+   ONESIGNAL CUSTOM BUTTON
+===================== */
+
 .onesignal-customlink-container {
-  margin: 16px 0;
+  margin: 12px 0;
+}
+
+.onesignal-customlink-container a,
+.onesignal-customlink-container button {
+  display:block !important;
+  width:100% !important;
+
+  padding:10px !important;
+  border:none !important;
+  border-radius:8px !important;
+
+  background:#6a4cff !important;
+  color:white !important;
+
+  font-family:'Pixel Sans' !important;
+  text-decoration:none !important;
+  text-align:center !important;
+
+  cursor:pointer !important;
+
+  transition:.2s ease !important;
+}
+
+.onesignal-customlink-container a:hover,
+.onesignal-customlink-container button:hover {
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
+
+.onesignal-customlink-container a:active,
+.onesignal-customlink-container button:active {
+  transform:translateY(1px);
 }
 
 #continueBtn:disabled {
   opacity: .4;
   cursor: not-allowed;
+  filter:grayscale(1);
 }
 
 .modal-screen {
