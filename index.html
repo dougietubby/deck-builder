@@ -25,11 +25,32 @@
 
 <body>
 <!-- NEW Onboarding stuff -->
-<div id="onboarding">
+<!-- =========================
+     VERIFICATION SCREEN
+========================= -->
+<div id="verificationScreen" class="modal-screen">
   <div class="onboard-box">
-    <h2>Enter the Grove </h2>
+    <h2>Enter the Grove</h2>
+
     <p>
-      Install the app and enable alerts to receive live camp events and quests.
+      Enter your Grove verification code.
+    </p>
+
+    <input id="codeInput" placeholder="Verification Code">
+    <button id="verifyBtn">Verify</button>
+  </div>
+</div>
+
+<!-- =========================
+     ONBOARDING SCREEN
+========================= -->
+<div id="welcomeScreen" class="modal-screen" style="display:none;">
+  <div class="onboard-box">
+
+    <h2>Welcome to the Grove</h2>
+
+    <p>
+      Before continuing, install the app and enable notifications.
     </p>
 
     <button id="installBtn">Install App</button>
@@ -39,56 +60,60 @@
       On iPhone: Tap <b>Share</b> → <b>Add to Home Screen</b>
     </div>
 
-    <!-- <button id="enterBtn">Enter</button> -->
-    <input id="codeInput" placeholder="Enter" />
-    <button id="verifyBtn">Verify</button>
-  </div>
-</div>
-
-<div id="stars"></div>
-<div id="stars2"></div>
-<div id="stars3"></div>
-
-<!-- <div id="login-screen">
-  <input type="email" id="email-input" placeholder="Enter email">
-  <button id="login-btn">Enter Grove</button>
-</div> -->
-
-<div id="class-select-wrapper">
-  <div id="class-select">
-
-    <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
-      <button data-class="knight" class="deck-btn">
-        <img src="cards/knight-icon.webp" alt="Knight Deck">
-      </button>
-    </div>
-
-    <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
-      <button data-class="mage" class="deck-btn">
-        <img src="cards/mage-icon.webp" alt="Mage Deck">
-      </button>
-    </div>
-
-    <div class="class-btn-wrap" data-desc="ROGUE: Control the fight, if you're skilled.">
-      <button data-class="rogue" class="deck-btn">
-        <img src="cards/rogue-icon.webp" alt="Rogue Deck">
-      </button>
-    </div>
+    <button id="continueBtn">
+      Continue
+    </button>
 
   </div>
 </div>
 
-<h1>Who are You?</h1>
 
-<div id="card-library"></div>
+<div id="libraryScreen"></div>
 
-<div id="overlay">
-  <div class="overlay-card">
-    <img id="overlay-img">
-    <div class="glint"></div>
+  <div id="stars"></div>
+  <div id="stars2"></div>
+  <div id="stars3"></div>
+
+  <!-- <div id="login-screen">
+    <input type="email" id="email-input" placeholder="Enter email">
+    <button id="login-btn">Enter Grove</button>
+  </div> -->
+
+  <div id="class-select-wrapper">
+    <div id="class-select">
+
+      <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
+        <button data-class="knight" class="deck-btn">
+          <img src="cards/knight-icon.webp" alt="Knight Deck">
+        </button>
+      </div>
+
+      <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
+        <button data-class="mage" class="deck-btn">
+          <img src="cards/mage-icon.webp" alt="Mage Deck">
+        </button>
+      </div>
+
+      <div class="class-btn-wrap" data-desc="ROGUE: Control the fight, if you're skilled.">
+        <button data-class="rogue" class="deck-btn">
+          <img src="cards/rogue-icon.webp" alt="Rogue Deck">
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <h1>Who are You?</h1>
+
+  <div id="card-library"></div>
+
+  <div id="overlay">
+    <div class="overlay-card">
+      <img id="overlay-img">
+      <div class="glint"></div>
+    </div>
   </div>
 </div>
-
 <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
 <script src="script.js"></script>
 </body>

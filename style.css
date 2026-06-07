@@ -52,6 +52,28 @@
   cursor:pointer;
 }
 
+.modal-screen {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(5,5,10,.85);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+#libraryScreen {
+  display: none;
+}
+
+body.show-library #libraryScreen {
+  display: block;
+}
+
 .hint {
   font-size:13px;
   opacity:.7;

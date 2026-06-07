@@ -1,71 +1,221 @@
 /* document.body.classList.add("locked"); */
 
+document.body.classList.remove("show-library");
+
 /* Onboarding Area */
 //#region Onboarding
-let deferredPrompt;
+
+
+const verificationScreen =
+  document.getElementById("verificationScreen");
+
+const welcomeScreen =
+  document.getElementById("welcomeScreen");
+
+const libraryScreen =
+  document.getElementById("libraryScreen");
+
+const GROVE_CODE = "Grove2026";
+
+let deferredPrompt = null;
+
+/* -------------------------
+   INSTALL
+------------------------- */
 
 window.addEventListener("beforeinstallprompt", (e) => {
+
   e.preventDefault();
   deferredPrompt = e;
+
 });
 
-document.getElementById("installBtn").onclick = async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-  } else {
-    // iOS fallback
-    document.getElementById("iosHint").style.display = "block";
-  }
-};
+document
+  .getElementById("installBtn")
+  ?.addEventListener("click", async () => {
 
-const GROVE_CODE = "Grove2026"; //  Move to supabase or edgefunciton later
+    if (deferredPrompt) {
 
-document.getElementById("verifyBtn").onclick = () => {
-  const input = document.getElementById("codeInput").value.trim();
+      await deferredPrompt.prompt();
 
-  if (input === GROVE_CODE) {
+    } else {
 
-    localStorage.setItem("grove_verified", "true");
+      document
+        .getElementById("iosHint")
+        .style.display = "block";
+    }
 
-    OneSignalDeferred.push(async function(OneSignal) {
-      OneSignal.User.addTag("grove_member", "true");
-    });
+});
 
-    alert("Welcome to the Grove 🌲");
+/* -------------------------
+   IOS DETECTION
+------------------------- */
 
-  } else {
-    alert("The forest does not recognize you...");
-  }
-};
-
-if (localStorage.getItem("grove_verified") === "true") {
-  OneSignalDeferred.push(async function(OneSignal) {
-    OneSignal.User.addTag("grove_member", "true");
-  });
-
-  document.getElementById("onboarding").style.display = "none";
-}
-
-document.getElementById("notifyBtn").onclick = async () => {
-
-  const permission = await Notification.requestPermission();
-
-  if (permission === "granted") {
-    console.log("Notifications enabled");
-  } else {
-    alert("Notifications are required for Grove alerts.");
-  }
-};
-
-document.getElementById("enterBtn").onclick = () => {
-  document.getElementById("onboarding").style.display = "none";
-};
-
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isIOS =
+  /iphone|ipad|ipod/i.test(
+    navigator.userAgent
+  );
 
 if (!isIOS) {
-  document.getElementById("iosHint").style.display = "none";
+
+  document
+    .getElementById("iosHint")
+    .style.display = "none";
 }
+
+/* -------------------------
+   NOTIFICATIONS
+------------------------- */
+
+document
+  .getElementById("notifyBtn")
+  ?.addEventListener("click", async () => {
+
+    const permission =
+      await Notification.requestPermission();
+
+    if (permission === "granted") {
+
+      console.log(
+        "Notifications enabled"
+      );
+
+    } else {
+
+      alert(
+        "Notifications are recommended for Grove alerts."
+      );
+    }
+
+});
+
+/* -------------------------
+   SHOW LIBRARY
+------------------------- */
+
+function showLibrary() {
+
+  verificationScreen.style.display = "none";
+  welcomeScreen.style.display = "none";
+
+  document.body.classList.add(
+    "show-library"
+  );
+}
+
+/* -------------------------
+   VERIFY
+------------------------- */
+
+document
+  .getElementById("verifyBtn")
+  .addEventListener("click", () => {
+
+    const input =
+      document
+        .getElementById("codeInput")
+        .value
+        .trim();
+
+    if (input === GROVE_CODE) {
+
+      localStorage.setItem(
+        "grove_verified",
+        "true"
+      );
+
+      OneSignalDeferred.push(
+        async function(OneSignal) {
+
+          OneSignal.User.addTag(
+            "grove_member",
+            "true"
+          );
+
+        }
+      );
+
+      verificationScreen.style.display =
+        "none";
+
+      welcomeScreen.style.display =
+        "flex";
+
+    } else {
+
+      alert(
+        "The forest does not recognize you..."
+      );
+    }
+
+});
+
+/* -------------------------
+   COMPLETE ONBOARDING
+------------------------- */
+
+document
+  .getElementById("continueBtn")
+  .addEventListener("click", () => {
+
+    localStorage.setItem(
+      "grove_onboarded",
+      "true"
+    );
+
+    showLibrary();
+
+});
+
+/* -------------------------
+   STARTUP FLOW
+------------------------- */
+
+const verified =
+  localStorage.getItem(
+    "grove_verified"
+  ) === "true";
+
+const onboarded =
+  localStorage.getItem(
+    "grove_onboarded"
+  ) === "true";
+
+if (!verified) {
+
+  verificationScreen.style.display =
+    "flex";
+
+  welcomeScreen.style.display =
+    "none";
+
+}
+else if (!onboarded) {
+
+  verificationScreen.style.display =
+    "none";
+
+  welcomeScreen.style.display =
+    "flex";
+
+}
+else {
+
+  OneSignalDeferred.push(
+    async function(OneSignal) {
+
+      OneSignal.User.addTag(
+        "grove_member",
+        "true"
+      );
+
+    }
+  );
+
+  showLibrary();
+}
+
+
 //#endregion
 
 //#region Card lib
