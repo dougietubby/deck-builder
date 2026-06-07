@@ -69,20 +69,59 @@ document
   .getElementById("notifyBtn")
   ?.addEventListener("click", async () => {
 
-    const permission =
-      await Notification.requestPermission();
+    try {
 
-    if (permission === "granted") {
+      const camp =
+        localStorage.getItem(
+          "grove_camp"
+        );
 
-      console.log(
-        "Notifications enabled"
+      OneSignalDeferred.push(
+        async function(OneSignal) {
+
+          await OneSignal.Notifications.requestPermission();
+
+          const permission =
+            OneSignal.Notifications.permission;
+
+          if (permission !== "granted") {
+
+            alert(
+              "Notifications are recommended for Grove alerts."
+            );
+
+            return;
+          }
+
+          await OneSignal.User.addTag(
+            "grove_member",
+            "true"
+          );
+
+          if (camp) {
+
+            await OneSignal.User.addTag(
+              "camp",
+              camp
+            );
+
+          }
+
+          console.log(
+            "OneSignal tags applied."
+          );
+
+          alert(
+            "Notifications enabled!"
+          );
+
+        }
       );
 
-    } else {
+    } catch (err) {
 
-      alert(
-        "Notifications are recommended for Grove alerts."
-      );
+      console.error(err);
+
     }
 
 });
@@ -144,7 +183,7 @@ document
           "grove_camp",
           result.camp
         );
-
+        /*
         OneSignalDeferred.push(
           async function(OneSignal) {
 
@@ -160,7 +199,7 @@ document
 
           }
         );
-
+        */
         verificationScreen.style.display =
           "none";
 
