@@ -6,5 +6,4 @@ from = "/api/verify"
 to = "/.netlify/functions/verify"
 status = 200
 
-[[redirects]]
-	# No catch-all redirect — serve distinct files from /, /home/, /events/, /cards/
+ 
