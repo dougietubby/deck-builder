@@ -334,6 +334,116 @@ else {
 
 //#endregion
 
+// ----------------------------
+// Supabase initialization (uses supabase-config.js)
+// ----------------------------
+const supabaseClient = window.getSupabase ? window.getSupabase() : (window._supabaseClient || null);
+
+async function loadEvents() {
+  const container = document.getElementById("eventsList");
+  if (!container) return;
+
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient.from('events').select('*').order('start_at', { ascending: true });
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        container.innerText = 'No upcoming events.';
+        return;
+      }
+
+      container.innerHTML = data.map(ev => `
+        <div class="event-item">
+          <h3>${ev.title}</h3>
+          <div>${new Date(ev.start_at).toLocaleString()}</div>
+          <p>${ev.description || ''}</p>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error('Events load error', err);
+      container.innerText = 'Unable to load events.';
+    }
+  } else {
+    container.innerText = 'Supabase not configured — cannot load events.';
+  }
+}
+
+// ----------------------------
+// Simple client-side routing
+// ----------------------------
+function hideAllScreens() {
+  [verificationScreen, welcomeScreen, document.getElementById('homeScreen'), document.getElementById('eventsScreen'), libraryScreen].forEach(el => {
+    if (!el) return;
+    el.style.display = 'none';
+  });
+}
+
+function route() {
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+
+  if (path === '/' ) {
+    hideAllScreens();
+    verificationScreen.style.display = 'flex';
+    return;
+  }
+
+  if (path === '/home') {
+    hideAllScreens();
+    document.getElementById('homeScreen').style.display = 'block';
+    return;
+  }
+
+  if (path === '/events') {
+    hideAllScreens();
+    document.getElementById('eventsScreen').style.display = 'block';
+    loadEvents();
+    return;
+  }
+
+  if (path === '/cards') {
+    // require verification + onboarding
+    const verified = localStorage.getItem('grove_verified') === 'true';
+    const onboarded = localStorage.getItem('grove_onboarded') === 'true';
+
+    if (!verified) {
+      history.replaceState({}, '', '/');
+      route();
+      return;
+    }
+
+    if (!onboarded) {
+      hideAllScreens();
+      welcomeScreen.style.display = 'flex';
+      return;
+    }
+
+    hideAllScreens();
+    showLibrary();
+    return;
+  }
+
+  // Unknown route -> redirect to home
+  history.replaceState({}, '', '/home');
+  route();
+}
+
+// hijack internal anchor links with data-route
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[data-route]');
+  if (!a) return;
+  e.preventDefault();
+  const href = a.getAttribute('href');
+  history.pushState({}, '', href);
+  route();
+});
+
+window.addEventListener('popstate', route);
+
+// Ensure route runs once on load
+setTimeout(route, 0);
+
 //#region Card lib
 const cards = [
   { file: "angelic_totem.webp", classes: [] },

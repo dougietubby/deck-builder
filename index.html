@@ -77,6 +77,23 @@
   </div>
 </div>
 
+<!-- Landing / Home Screen -->
+<div id="homeScreen" style="display:none; padding:24px;">
+  <h2>Welcome to the Grove — Landing</h2>
+  <p>This is the public landing page. From here you can learn about the Grove.</p>
+  <nav>
+    <a href="/" data-route>Verify</a> ·
+    <a href="/events" data-route>Events</a> ·
+    <a href="/cards" data-route>Cards</a>
+  </nav>
+</div>
+
+<!-- Events Screen -->
+<div id="eventsScreen" style="display:none; padding:24px;">
+  <h2>Events</h2>
+  <div id="eventsList">Loading events...</div>
+</div>
+
 
 <div id="libraryScreen"></div>
 
@@ -124,7 +141,8 @@
     </div>
   </div>
 </div>
-<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

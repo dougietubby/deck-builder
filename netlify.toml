@@ -5,3 +5,8 @@ directory = "netlify/functions"
 from = "/api/verify"
 to = "/.netlify/functions/verify"
 status = 200
+
+[[redirects]]
+	from = "/*"
+	to = "/index.html"
+	status = 200
