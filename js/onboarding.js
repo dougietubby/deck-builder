@@ -38,11 +38,12 @@ verifyBtn?.addEventListener('click', async ()=>{
   }
 });
 
-const supabaseClient = getSupabase();
+const supabaseClientPromise = getSupabase();
 
 // Handle redirect back from Supabase magic link: parse session from URL and store it
 (async ()=>{
   try {
+    const supabaseClient = await supabaseClientPromise;
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
     if (error) {
@@ -73,6 +74,9 @@ sendMagicLink?.addEventListener('click', async ()=>{
       return;
     }
 
+    const supabaseClient = await supabaseClientPromise;
+    if (!supabaseClient) { authResult.innerText = 'Supabase client not available'; return; }
+
     const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/home/' } });
     if (error) { authResult.innerText = error.message || 'Authentication error'; console.error('signInWithOtp error', error); return; }
     authResult.innerText = 'Magic link sent — check your email';
@@ -80,6 +84,8 @@ sendMagicLink?.addEventListener('click', async ()=>{
 });
 
 continueBtn?.addEventListener('click', async ()=>{
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) { alert('Supabase client not available.'); return; }
   const session = await supabaseClient.auth.getSession();
   const user = session?.data?.session?.user;
   if (!user) { alert('Please sign in first.'); return; }
@@ -96,6 +102,8 @@ continueBtn?.addEventListener('click', async ()=>{
 
 // Auto-redirect if already authenticated and onboarded
 (async ()=>{
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) return;
   const session = await supabaseClient.auth.getSession();
   const onboarded = localStorage.getItem('grove_onboarded') === 'true';
   if (session?.data?.session?.user && onboarded) {
