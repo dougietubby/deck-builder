@@ -525,19 +525,7 @@ const cards = [
 ];
 //#endregion
 
-//#region OLD supabase
-
-/* const supabaseUrl = "https://vtgdwihretrnmjnalfxd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0Z2R3aWhyZXRybm1qbmFsZnhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzI1NjAsImV4cCI6MjA4Njc0ODU2MH0.J5ClsAfN7F0bA5fAyT04Aege3amYPxloXBGprBvkH-Y";
-
-if (!window._supabaseClient) {
-  window._supabaseClient = window.supabase.createClient(
-    supabaseUrl,
-    supabaseKey
-  );
-}
-
-var supabase = window._supabaseClient;
+//#endregion
  */
 // ----------------------------
 // PROFILE CREATION
