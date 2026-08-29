@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>The Grove</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>The Grove — Onboarding</title>
+  <link rel="stylesheet" href="/style.css" />
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -14,9 +14,8 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "e1d1cb65-fbf0-4a1f-a9d4-dcc90642cb28",
-
-      serviceWorkerPath: "OneSignalSDKWorker.js",
-      serviceWorkerUpdaterPath: "OneSignalSDKUpdaterWorker.js",
+      serviceWorkerPath: "/OneSignalSDKWorker.js",
+      serviceWorkerUpdaterPath: "/OneSignalSDKUpdaterWorker.js",
     });
   });
   </script>
@@ -24,10 +23,8 @@
 </head>
 
 <body>
-<!-- NEW Onboarding stuff -->
-<!-- =========================
-     VERIFICATION SCREEN
-========================= -->
+
+<!-- ONBOARDING PAGE ONLY -->
 <div id="verificationScreen" class="modal-screen">
   <div class="onboard-box">
     <h2>Enter the Grove</h2>
@@ -38,12 +35,11 @@
 
     <input id="codeInput" placeholder="Verification Code">
     <button id="verifyBtn">Verify</button>
+
+    <div id="verifyResult" style="margin-top:12px;color:#f66"></div>
   </div>
 </div>
 
-<!-- =========================
-     ONBOARDING SCREEN
-========================= -->
 <div id="welcomeScreen" class="modal-screen" style="display:none;">
   <div class="onboard-box">
 
@@ -68,6 +64,13 @@
 
     <div class="onesignal-customlink-container"></div>
 
+    <div id="postVerifyAuth" style="margin-top:12px;">
+      <p>Sign in or create your account to continue:</p>
+      <input id="emailInput" placeholder="Email address" type="email">
+      <button id="sendMagicLink">Send Magic Link</button>
+      <div id="authResult" style="margin-top:8px;color:#f66"></div>
+    </div>
+
     <button
       id="continueBtn"
       disabled>
@@ -77,72 +80,8 @@
   </div>
 </div>
 
-<!-- Landing / Home Screen -->
-<div id="homeScreen" style="display:none; padding:24px;">
-  <h2>Welcome to the Grove — Landing</h2>
-  <p>This is the public landing page. From here you can learn about the Grove.</p>
-  <nav>
-    <a href="/" data-route>Verify</a> ·
-    <a href="/events" data-route>Events</a> ·
-    <a href="/cards" data-route>Cards</a>
-  </nav>
-</div>
-
-<!-- Events Screen -->
-<div id="eventsScreen" style="display:none; padding:24px;">
-  <h2>Events</h2>
-  <div id="eventsList">Loading events...</div>
-</div>
-
-
-<div id="libraryScreen"></div>
-
-  <div id="stars"></div>
-  <div id="stars2"></div>
-  <div id="stars3"></div>
-
-  <!-- <div id="login-screen">
-    <input type="email" id="email-input" placeholder="Enter email">
-    <button id="login-btn">Enter Grove</button>
-  </div> -->
-
-  <div id="class-select-wrapper">
-    <div id="class-select">
-
-      <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
-        <button data-class="knight" class="deck-btn">
-          <img src="cards/knight-icon.webp" alt="Knight Deck">
-        </button>
-      </div>
-
-      <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
-        <button data-class="mage" class="deck-btn">
-          <img src="cards/mage-icon.webp" alt="Mage Deck">
-        </button>
-      </div>
-
-      <div class="class-btn-wrap" data-desc="ROGUE: Control the fight, if you're skilled.">
-        <button data-class="rogue" class="deck-btn">
-          <img src="cards/rogue-icon.webp" alt="Rogue Deck">
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <h1>Who are You?</h1>
-
-  <div id="card-library"></div>
-
-  <div id="overlay">
-    <div class="overlay-card">
-      <img id="overlay-img">
-      <div class="glint"></div>
-    </div>
-  </div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="script.js"></script>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/js/onboarding.js"></script>
 </body>
 </html>

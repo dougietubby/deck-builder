@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>The Grove — Events</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav>
+      <a href="/home/" class="nav-link" id="nav-home">Home</a>
+      <a href="/events/" class="nav-link" id="nav-events">Events</a>
+      <a href="/cards/" class="nav-link" id="nav-cards">Cards</a>
+      <button id="signOutBtn" style="float:right;">Sign Out</button>
+    </nav>
+  </header>
+
+  <main id="eventsMain" style="padding:24px;">
+    <h1>Events</h1>
+    <div id="eventsList">Loading events...</div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/js/events.js"></script>
+</body>
+</html>

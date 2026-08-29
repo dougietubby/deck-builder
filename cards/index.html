@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>The Grove — Cards</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav>
+      <a href="/home/" class="nav-link" id="nav-home">Home</a>
+      <a href="/events/" class="nav-link" id="nav-events">Events</a>
+      <a href="/cards/" class="nav-link" id="nav-cards">Cards</a>
+      <button id="signOutBtn" style="float:right;">Sign Out</button>
+    </nav>
+  </header>
+
+  <main id="cardsMain">
+    <!-- Card library markup copied from original -->
+    <div id="class-select-wrapper">
+      <div id="class-select">
+
+        <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
+          <button data-class="knight" class="deck-btn">
+            <img src="/cards/knight-icon.webp" alt="Knight Deck">
+          </button>
+        </div>
+
+        <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
+          <button data-class="mage" class="deck-btn">
+            <img src="/cards/mage-icon.webp" alt="Mage Deck">
+          </button>
+        </div>
+
+        <div class="class-btn-wrap" data-desc="ROGUE: Control the fight, if you're skilled.">
+          <button data-class="rogue" class="deck-btn">
+            <img src="/cards/rogue-icon.webp" alt="Rogue Deck">
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <h1>Who are You?</h1>
+
+    <div id="card-library"></div>
+
+    <div id="overlay">
+      <div class="overlay-card">
+        <img id="overlay-img">
+        <div class="glint"></div>
+      </div>
+    </div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/js/cards.js"></script>
+</body>
+</html>
