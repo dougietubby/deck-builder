@@ -40,12 +40,41 @@ verifyBtn?.addEventListener('click', async ()=>{
 
 const supabaseClient = getSupabase();
 
+// Handle redirect back from Supabase magic link: parse session from URL and store it
+(async ()=>{
+  try {
+    if (!supabaseClient) return;
+    const { data, error } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
+    if (error) {
+      // Not necessarily an error — only log
+      console.log('getSessionFromUrl:', error.message || error);
+    }
+
+    const user = data?.session?.user;
+    if (user) {
+      // ensure profile and link OneSignal, then redirect
+      const profile = await ensureProfile(user);
+      try { await syncOneSignalUser(user, profile); } catch(e){}
+      localStorage.setItem('grove_onboarded','true');
+      window.location.href = '/home/';
+    }
+  } catch (e) {
+    console.error('Error handling magic link redirect', e);
+  }
+})();
+
 sendMagicLink?.addEventListener('click', async ()=>{
   const email = (emailInput.value || '').trim();
   if (!email) { authResult.innerText = 'Enter an email'; return; }
   try {
-    const { error } = await supabaseClient.auth.signInWithOtp({ email });
-    if (error) { authResult.innerText = error.message; return; }
+    if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+      authResult.innerText = 'Supabase not configured. Ask admin to set SUPABASE_URL and SUPABASE_ANON_KEY.';
+      console.error('Supabase config missing', { SUPABASE_URL: window.SUPABASE_URL, SUPABASE_ANON_KEY: !!window.SUPABASE_ANON_KEY });
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/home/' } });
+    if (error) { authResult.innerText = error.message || 'Authentication error'; console.error('signInWithOtp error', error); return; }
     authResult.innerText = 'Magic link sent — check your email';
   } catch (e) { authResult.innerText = 'Auth error'; }
 });
