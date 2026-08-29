@@ -1,53 +1,44 @@
-// Card library logic extracted from original script.js
 import { getSupabase } from './supabase.js';
+import { initBottomNav } from './shared-nav.js';
 
-const supabaseClient = getSupabase();
+const supabaseClientPromise = getSupabase();
 
-const library = document.getElementById('card-library');
-const overlay = document.getElementById('overlay');
-const overlayImg = document.getElementById('overlay-img');
-const overlayCard = overlay.querySelector('.overlay-card');
-const glint = overlay.querySelector('.glint');
-const classButtons = [...document.querySelectorAll('.deck-btn')];
+document.addEventListener('DOMContentLoaded', async () => {
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) {
+    alert('Supabase not configured');
+    return;
+  }
 
-const BASE_SCALE = 1.3;
-const BASE_RADIUS = 0.25;
-let activeCards = [];
-let orbitTime = 0;
-let overlayCards = [];
-let overlayIndex = 0;
+  // Check authentication
+  const { data: session } = await supabaseClient.auth.getSession();
+  const user = session?.user;
+  if (!user) {
+    window.location.href = '/';
+    return;
+  }
 
-const randRange = (min, max) => Math.random() * (max - min) + min;
-const getRadius = () => Math.min(window.innerWidth, window.innerHeight) * BASE_RADIUS;
+  // Initialize navigation
+  initBottomNav();
 
-const cards = [
-  { file: "angelic_totem.webp", classes: [] },
-  { file: "arcane_barrier.webp", classes: [] },
-  // ... (omitted for brevity) - keep full list in existing file if needed
-];
+  // Load cards data (placeholder for now)
+  const container = document.getElementById('cardsContainer');
+  if (!container) return;
 
-function renderCircle(className) {
-  library.innerHTML = "";
-  library.className = "circle";
-  activeCards = [];
+  try {
+    // TODO: Implement card loading from Supabase
+    container.innerHTML = `
+      <div class="card text-center">
+        <p class="text-secondary">Your card collection will appear here.</p>
+        <p class="text-muted">Card management features coming soon!</p>
+      </div>
+    `;
+  } catch (e) {
+    console.error('Error loading cards:', e);
+    container.innerHTML = '<div class="card text-center text-danger">Unable to load cards.</div>';
+  }
+});
 
-  const filtered = cards.filter(c => c.classes.includes(className));
-  const radius = getRadius();
-
-  filtered.forEach((card, i) => {
-    const depth = randRange(0.8, 1.2);
-    const el = document.createElement('div');
-    el.className = 'card';
-    const img = document.createElement('img');
-    img.src = `/cards/${card.file}`;
-    el.appendChild(img);
-    library.appendChild(el);
-
-    const state = { el, img, depth, radius, angle: (i / filtered.length) * Math.PI * 2, orbitSpeed: randRange(0.15, 0.35), orbitOffset: randRange(0, Math.PI * 2), baseZ: Math.floor(depth * 100) };
-    el.style.zIndex = state.baseZ;
-    activeCards.push(state);
-
-    el.style.left = '50%'; el.style.top = '50%'; el.style.opacity = '0'; el.style.transform = 'translate(-50%, -50%) scale(0.8)';
 
     requestAnimationFrame(()=>{
       const x = Math.cos(state.angle) * radius;

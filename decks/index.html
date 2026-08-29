@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>The Grove — Events</title>
+  <title>The Grove — Decks</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.ico">
@@ -12,22 +12,20 @@
 <body>
   <main class="page-wrapper">
     <div class="page-header">
-      <h1>Grove Events</h1>
-      <p class="text-secondary">Upcoming events and announcements</p>
+      <h1>My Decks</h1>
+      <p class="text-secondary">Create and manage your card decks</p>
     </div>
 
     <div class="page-content">
-      <div id="eventsList">
-        <div class="card text-center">
-          <p class="text-secondary">No events scheduled yet.</p>
-          <p class="text-muted">Check back soon for Grove gatherings, tournaments, and duels!</p>
-        </div>
+      <div class="card text-center">
+        <p class="text-secondary">You haven't created any decks yet.</p>
+        <p class="text-muted">Deck creation features coming soon!</p>
       </div>
     </div>
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
-<script type="module" src="/js/events.js"></script>
+<script type="module" src="/js/decks.js"></script>
 </body>
 </html>

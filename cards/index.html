@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>The Grove — Cards</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="manifest" href="/manifest.json">
@@ -9,25 +10,26 @@
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <nav>
-      <a href="/home/" class="nav-link" id="nav-home">Home</a>
-      <a href="/events/" class="nav-link" id="nav-events">Events</a>
-      <a href="/cards/" class="nav-link" id="nav-cards">Cards</a>
-      <button id="signOutBtn" style="float:right;">Sign Out</button>
-    </nav>
-  </header>
+  <main class="page-wrapper">
+    <div class="page-header">
+      <h1>Card Collection</h1>
+      <p class="text-secondary">Manage your cards and decks</p>
+    </div>
 
-  <main id="cardsMain">
-    <!-- Card library markup copied from original -->
-    <div id="class-select-wrapper">
-      <div id="class-select">
-
-        <div class="class-btn-wrap" data-desc="KNIGHT: Heavy armour and damage.">
-          <button data-class="knight" class="deck-btn">
-            <img src="/cards/knight-icon.webp" alt="Knight Deck">
-          </button>
+    <div class="page-content">
+      <div id="cardsContainer">
+        <div class="card text-center">
+          <p class="text-secondary">Loading your card collection...</p>
         </div>
+      </div>
+    </div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/js/cards.js"></script>
+</body>
+</html>
 
         <div class="class-btn-wrap" data-desc="MAGE: Constant pressure, but fragile.">
           <button data-class="mage" class="deck-btn">

@@ -1,18 +1,52 @@
 import { getSupabase } from './supabase.js';
+import { initBottomNav } from './shared-nav.js';
 
-const supabase = getSupabase();
+const supabaseClientPromise = getSupabase();
 
-document.addEventListener('DOMContentLoaded', async ()=>{
-  const { data: session } = await supabase.auth.getSession();
+document.addEventListener('DOMContentLoaded', async () => {
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) {
+    alert('Supabase not configured');
+    return;
+  }
+
+  // Check authentication
+  const { data: session } = await supabaseClient.auth.getSession();
   const user = session?.user;
-  if (!user) { window.location.href = '/'; return; }
+  if (!user) {
+    window.location.href = '/';
+    return;
+  }
+
+  // Initialize navigation
+  initBottomNav();
 
   const container = document.getElementById('eventsList');
   if (!container) return;
 
   try {
-    const { data } = await supabase.from('events').select('*').order('start_at', { ascending: true });
-    if (!data || data.length===0) { container.innerText = 'No upcoming events.'; return; }
-    container.innerHTML = data.map(ev=>`<div class="event-item"><h3>${ev.title}</h3><div>${new Date(ev.start_at).toLocaleString()}</div><p>${ev.description||''}</p></div>`).join('');
-  } catch(e) { container.innerText = 'Unable to load events.'; }
+    const { data } = await supabaseClient
+      .from('events')
+      .select('*')
+      .order('start_at', { ascending: true });
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="card text-center"><p class="text-secondary">No events scheduled yet.</p></div>';
+      return;
+    }
+
+    container.innerHTML = data
+      .map(ev => `
+        <div class="card mb-lg">
+          <h3>${ev.title}</h3>
+          <p class="text-secondary text-sm">${new Date(ev.start_at).toLocaleString()}</p>
+          <p>${ev.description || ''}</p>
+        </div>
+      `)
+      .join('');
+  } catch (e) {
+    console.error('Error loading events:', e);
+    container.innerHTML = '<div class="card text-center text-danger">Unable to load events.</div>';
+  }
 });
+

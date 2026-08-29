@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>The Grove — Profile</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+</head>
+<body>
+  <main class="page-wrapper">
+    <div class="page-header">
+      <h1>Your Profile</h1>
+    </div>
+
+    <div class="page-content">
+      <!-- Profile Header Card -->
+      <div class="card profile-header mb-xl">
+        <div class="profile-avatar-section">
+          <div class="profile-avatar" id="profileAvatar">👤</div>
+          <div class="profile-header-info">
+            <h2 id="profileName">Loading...</h2>
+            <p class="text-secondary" id="profileEmail"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progression Section -->
+      <div class="section">
+        <h3 class="section-title">Progression</h3>
+        <div class="card">
+          <div class="stat-row">
+            <div class="stat-label">Level</div>
+            <div class="stat-value" id="profileLevel">1</div>
+          </div>
+          <div class="stat-row mt-lg">
+            <div class="stat-label">Experience</div>
+            <div class="stat-value">
+              <div id="profileXP">0</div>
+              <div class="progress-bar mt-sm">
+                <div class="progress-fill" id="profileXPBar" style="width: 0%"></div>
+              </div>
+              <div class="text-muted mt-sm" id="profileXPText"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camp & Achievements -->
+      <div class="section">
+        <h3 class="section-title">Affiliation</h3>
+        <div class="card">
+          <div class="stat-row">
+            <div class="stat-label">Verified Camp</div>
+            <div class="stat-value text-accent" id="profileCamp">Not assigned</div>
+          </div>
+          <div class="stat-row mt-lg">
+            <div class="stat-label">Onboarded</div>
+            <div class="stat-value text-success" id="profileOnboarded">Yes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Section -->
+      <div class="section">
+        <h3 class="section-title">Edit Profile</h3>
+        <div class="card">
+          <form id="profileForm">
+            <div class="form-group">
+              <label class="form-label">Display Name</label>
+              <input type="text" id="displayNameInput" placeholder="Your display name" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+          </form>
+          <div id="profileUpdateMessage" style="margin-top: var(--space-md); text-align: center;"></div>
+        </div>
+      </div>
+
+      <!-- Session Info (debug) -->
+      <div class="section mt-2xl">
+        <h3 class="section-title text-muted">Session</h3>
+        <div class="card text-muted" style="font-size: var(--text-xs);">
+          <div id="sessionInfo">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
+<script type="module" src="/js/profile.js"></script>
+</body>
+</html>
