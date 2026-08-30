@@ -27,9 +27,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const { data } = await supabaseClient
       .from('events')
-      .select('*')
-      .order('start_at', { ascending: true });
+      .eq('is_public', true)
+      .order('start_at', { ascending: true, nullsFirst: false });
 
+
+      
     if (!data || data.length === 0) {
       container.innerHTML = '<div class="card text-center"><p class="text-secondary">No events scheduled yet.</p></div>';
       return;
