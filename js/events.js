@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const { data } = await supabaseClient
       .from('events')
+      .select('*')
       .eq('is_public', true)
       .order('start_at', { ascending: true, nullsFirst: false });
 
