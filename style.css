@@ -19,75 +19,54 @@
       COLORS
     ===================== */
 
-    /* Dark Foundations */
+    /* Dark Foundations (Kept dark, but deepened the contrast) */
+    --color-bg-primary: #050406;
+    --color-bg-secondary: #0D0B12;
+    --color-bg-tertiary: #1B1424;
+    --color-bg-panel: #130E1A;
+    --color-bg-overlay: rgba(5, 4, 6, 0.90);
 
-    --color-bg-primary: #08070A;
-    --color-bg-secondary: #151219;
-    --color-bg-tertiary: #28202B;
-    --color-bg-panel: #1D1720;
-    --color-bg-overlay: rgba(8, 6, 10, 0.86);
+    /* Slime Green (Replacing Spectral Teal with Radioactive Goo) */
+    --color-mystic-primary: #39FF14;     /* Neon/Radioactive Slime Green */
+    --color-mystic-secondary: #1E820A;   /* Deep toxic sludge */
+    --color-mystic-light: #76FF6A;       /* Glowing ectoplasm */
 
+    /* Electric Purple (Ampping up your original #8066A3) */
+    --color-accent-primary: #A020F0;     /* Vivid Electric Purple */
+    --color-accent-secondary: #520E8A;   /* Deep shadow purple */
+    --color-accent-light: #D47BFF;       /* Haunted neon violet */
 
-    /* Arcane Purple */
+    /* Toxic Grove / Monster Moss */
+    --color-success: #7FFF00;            /* Chartreuse / Bright Monster Green */
+    --color-success-dark: #3A7302;
+    --color-success-light: #A6FF54;
 
-    --color-accent-primary: #8066A3;
-    --color-accent-secondary: #59456F;
-    --color-accent-light: #B39AC9;
+    /* Oozing Blood / Curse (Shifted from dull brick red to classic horror red) */
+    --color-danger: #E60026;             /* Vibrant B-movie blood red */
+    --color-danger-dark: #7A0012;
+    --color-cursed: #C71585;             /* Medium Violet Red / Monster Blood magenta */
 
+    /* Haunted Pumpkin / Warning (Changed from Antique Gold to Neon Orange) */
+    --color-warning: #FF5F1F;            /* Neon Pumpkin Orange */
+    --color-warning-light: #FF9F73;
 
-    /* Spectral Teal */
+    /* Spectral Blue (Shifted from dull blue to a spectral, bioluminescent cyan) */
+    --color-rare: #00F5FF;               /* Electric Cyan / Ghost light */
 
-    --color-mystic-primary: #477D78;
-    --color-mystic-secondary: #315A58;
-    --color-mystic-light: #78AAA1;
+    /* Stars & Text (Brightened the text slightly to punch through the neon) */
+    --color-star: #FFEA00;               /* Bright Neon Yellow */
+    --color-star-bright: #FFFF80;
 
+    --color-text-primary: #EAE5D9;       /* Slightly cleaner parchment */
+    --color-text-secondary: #B5AD9E;
+    --color-text-muted: #736B63;
 
-    /* Grove / Moss */
-
-    --color-success: #71845A;
-    --color-success-dark: #4B5C3E;
-    --color-success-light: #91A875;
-
-
-    /* Antique Gold */
-
-    --color-warning: #B89A4E;
-    --color-warning-light: #D0B86A;
-
-
-    /* Blood / Curse */
-
-    --color-danger: #9A4B50;
-    --color-danger-dark: #68353B;
-    --color-cursed: #8C5268;
-
-
-    /* Rare / Spectral Blue */
-
-    --color-rare: #5F8FA3;
-
-
-    /* Stars */
-
-    --color-star: #D0B86A;
-    --color-star-bright: #E2D29A;
-
-
-    /* Parchment / Text */
-
-    --color-text-primary: #D8D0C0;
-    --color-text-secondary: #A49B8D;
-    --color-text-muted: #68615B;
-
-
-    /* Borders */
-
-    --color-border: rgb(128 102 163 / 32%);
-    --color-border-light: rgb(128 102 163 / 15%);
-
-    --color-border-gold: rgb(184 154 78 / 35%);
-    --color-border-mystic: rgb(71 125 120 / 35%);
-    --color-border-danger: rgb(154 75 80 / 35%);
+    /* Neon Glow Borders */
+    --color-border: rgb(160 32 240 / 40%);        /* Electric purple border */
+    --color-border-light: rgb(160 32 240 / 20%);
+    --color-border-gold: rgb(255 95 31 / 40%);     /* Neon orange border */
+    --color-border-mystic: rgb(57 255 20 / 40%);   /* Slime green border */
+    --color-border-danger: rgb(230 0 38 / 40%);    /* Blood red border */
 
 
     /* =====================
