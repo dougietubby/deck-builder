@@ -9,26 +9,27 @@
   --safe-area-inset-left: max(env(safe-area-inset-left), 0px);
   --safe-area-inset-right: max(env(safe-area-inset-right), 0px);
 
-  /* Colors - Mystical Grove Theme */
-  --color-bg-primary: #06040a;
-  --color-bg-secondary: #1a1524;
-  --color-bg-tertiary: #2d2540;
-  --color-bg-overlay: rgba(10, 10, 15, 0.75);
-  
-  --color-accent-primary: #8b6cff;
-  --color-accent-secondary: #6a4cff;
-  --color-accent-light: #a890ff;
-  
-  --color-success: #4ade80;
-  --color-warning: #fbbf24;
-  --color-danger: #ff6b6b;
-  
-  --color-text-primary: #e6e6e6;
-  --color-text-secondary: #a0a0a0;
-  --color-text-muted: #6b6b6b;
-  
-  --color-border: rgba(160, 120, 255, 0.25);
-  --color-border-light: rgba(160, 120, 255, 0.12);
+  /* Colors - Retro Dark Fantasy */
+
+  --color-bg-primary: #08070A;
+  --color-bg-secondary: #151217;
+  --color-bg-tertiary: #241D25;
+  --color-bg-overlay: rgba(8, 6, 10, 0.82);
+
+  --color-accent-primary: #75658C;
+  --color-accent-secondary: #574968;
+  --color-accent-light: #A394B5;
+
+  --color-success: #6F8B62;
+  --color-warning: #B9974A;
+  --color-danger: #9A4F4F;
+
+  --color-text-primary: #D8D0C0;
+  --color-text-secondary: #9E978D;
+  --color-text-muted: #625D59;
+
+  --color-border: rgba(137, 116, 151, 0.28);
+  --color-border-light: rgba(137, 116, 151, 0.13);
   
   /* Typography */
   --font-display: 'Jacquard 12', serif;
