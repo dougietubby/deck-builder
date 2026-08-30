@@ -73,8 +73,8 @@
       TYPOGRAPHY
     ===================== */
 
-    --font-display: 'Jacquard 12', serif;
-    --font-ui: 'Pixel Sans', system-ui, -apple-system, sans-serif;
+    --font-display: 'Caacupe One', serif;
+    --font-ui: 'DotGothic16', system-ui, -apple-system, sans-serif;
     --font-body: system-ui, -apple-system, sans-serif;
 
 
@@ -143,6 +143,18 @@
 @font-face {
   font-family: 'Jacquard 12';
   src: url('fonts/Jacquard12-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Caacupe One';
+  src: url('fonts/CaacupeOne-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DotGothic16';
+  src: url('fonts/DotGothic16-Regular.ttf') format('truetype');
   font-display: swap;
 }
 
@@ -1425,7 +1437,7 @@ body.started #class-select {
 
   text-align: center;
 
-  font-family: 'Pixel Sans';
+  font-family: 'DotGothic16';
 
   font-size: 15px;
 
