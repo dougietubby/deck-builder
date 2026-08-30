@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Check authentication
-  const { data: session } = await supabaseClient.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   const user = session?.user;
   if (!user) {
     window.location.href = '/';
