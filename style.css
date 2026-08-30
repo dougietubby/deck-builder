@@ -872,12 +872,12 @@ body.started #card-library{
   pointer-events:auto;
 }
 
-.card{
-  position:absolute;
-  width:160px;
-  padding:6px;
-  cursor:pointer;
-  perspective:1000px;
+#card-library .card {
+  position: absolute;
+  width: 160px;
+  padding: 6px;
+  cursor: pointer;
+  perspective: 1000px;
 }
 
 .card img{
