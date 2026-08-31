@@ -1834,7 +1834,7 @@ body.started #card-library {
 
   height: 48px;
 
-  
+  margin: 0 auto var(--space-xs);
 
   display: flex;
 
