@@ -41,6 +41,18 @@ export function initBottomNav() {
         </svg>
         <span class="nav-label">Events</span>
       </a>
+      <a href="/abilities/" class="nav-item" id="nav-abilities" title="Abilities">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2z"></path>
+        </svg>
+        <span class="nav-label">Spells</span>
+      </a>
+      <a href="/quests/" class="nav-item" id="nav-quests" title="Quests">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 3h12v18H6z"></path><path d="M9 7h6M9 11h6M9 15h4"></path>
+        </svg>
+        <span class="nav-label">Quests</span>
+      </a>
       <button class="nav-item nav-logout" id="nav-logout" title="Sign Out">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"></path>

@@ -1,5 +1,7 @@
 import { getSupabase } from './supabase.js';
 import { initBottomNav } from './shared-nav.js';
+import { getProgression } from './progression.js';
+import { PROFILE_ICONS } from './profile-icons.js';
 
 const supabaseClientPromise = getSupabase();
 
@@ -35,14 +37,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Display profile info
   document.getElementById('profileName').textContent = profile?.display_name || user.email?.split('@')[0] || 'Grove Member';
   document.getElementById('profileEmail').textContent = user.email;
-  document.getElementById('profileLevel').textContent = profile?.level || 1;
-  document.getElementById('profileXP').textContent = profile?.xp || 0;
+  const progression = await getProgression();
+  document.getElementById('profileLevel').textContent = progression.level;
+  document.getElementById('profileXP').textContent = progression.xp;
+  document.getElementById('profileMana').textContent = progression.mana;
   document.getElementById('profileCamp').textContent = profile?.camp || 'Not assigned';
+
+  const avatarPicker = document.getElementById('avatarPicker');
+  const avatarMessage = document.getElementById('avatarMessage');
+  const { data: unlockedRows } = await supabaseClient.from('user_rewards').select('reward_id').eq('user_id', user.id).eq('reward_type', 'avatar');
+  const unlockedAvatars = new Set(['default', ...(unlockedRows || []).map((row) => row.reward_id)]);
+  avatarPicker.innerHTML = PROFILE_ICONS.map((avatar) => {
+    const unlocked = avatar.unlocked || unlockedAvatars.has(avatar.id);
+    const selected = (profile?.equipped_avatar || 'default') === avatar.id;
+    return `<button type="button" class="avatar-option ${unlocked ? '' : 'is-locked'} ${selected ? 'is-equipped' : ''}" data-avatar="${avatar.id}" ${unlocked ? '' : 'disabled'}><span class="avatar-image" style="background-image:url('${avatar.image}')"></span><span>${unlocked ? avatar.name : 'LOCKED'}</span></button>`;
+  }).join('');
+  avatarPicker.addEventListener('click', async (event) => {
+    const button = event.target.closest('.avatar-option');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    const { error } = await supabaseClient.from('profiles').update({ equipped_avatar: button.dataset.avatar }).eq('id', user.id);
+    button.disabled = false;
+    if (error) { avatarMessage.textContent = 'Unable to equip profile art.'; return; }
+    avatarPicker.querySelectorAll('.avatar-option').forEach((item) => item.classList.toggle('is-equipped', item === button));
+    avatarMessage.textContent = 'Profile art equipped.';
+  });
   
   // XP progress bar (assuming 100 XP per level for now)
-  const xp = profile?.xp || 0;
-  const xpForLevel = 100;
-  const xpProgress = Math.min((xp % xpForLevel) / xpForLevel * 100, 100);
+  const xp = progression.xp;
+  const xpForLevel = progression.xpPerLevel;
+  const xpProgress = Math.min(progression.xpIntoLevel / xpForLevel * 100, 100);
   document.getElementById('profileXPBar').style.width = xpProgress + '%';
   document.getElementById('profileXPText').textContent = `${xp % xpForLevel} / ${xpForLevel} XP to next level`;
 
