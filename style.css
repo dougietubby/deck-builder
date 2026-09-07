@@ -1314,7 +1314,24 @@ body.locked #card-library {
 .ability-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); }
 .ability-card, .journal-card { display: flex; gap: var(--space-md); justify-content: space-between; border: 1px solid var(--color-border); background: var(--color-bg-panel); padding: var(--space-lg); box-shadow: var(--shadow-sm); }
 .ability-card.is-locked { opacity: 0.62; }
-.ability-rune { min-width: 48px; height: 48px; display: grid; place-items: center; color: var(--color-star); border: 1px solid var(--color-border-gold); font-family: var(--font-ui); }
+.ability-rune {
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    color: var(--color-star);
+    border: 1px solid var(--color-border-gold);
+    font-family: var(--font-ui);
+    overflow: hidden;
+}
+
+.ability-rune img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
 .ability-copy { flex: 1; }
 .ability-heading { display: flex; justify-content: space-between; gap: var(--space-sm); align-items: baseline; }
 .ability-heading h2, .journal-card h2 { margin: 0; font: 1.25rem var(--font-display); color: var(--color-text-primary); }
