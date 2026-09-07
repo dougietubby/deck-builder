@@ -46,20 +46,24 @@ const getAuthCallbackUrl = () => new URL('/auth/callback', window.location.origi
   try {
     const supabaseClient = await supabaseClientPromise;
     if (!supabaseClient) return;
+
+    console.log('[onboarding] checking for existing auth response on load', window.location.href);
     const { data, error } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
     if (error) {
-      console.log('getSessionFromUrl:', error.message || error);
+      console.log('[onboarding] getSessionFromUrl result', error.message || error);
     }
 
     const user = data?.session?.user || (await supabaseClient.auth.getSession()).data.session?.user;
     if (user) {
+      console.log('[onboarding] auth session available, continuing to home', user.id);
       const profile = await ensureProfile(user);
-      try { await syncOneSignalUser(user, profile); } catch (e) { console.warn('OneSignal sync skipped on landing redirect', e); }
+      console.log('[onboarding] ensureProfile result', profile ? profile.id : null);
+      try { await syncOneSignalUser(user, profile); console.log('[onboarding] OneSignal sync requested'); } catch (e) { console.warn('[onboarding] OneSignal sync skipped on landing redirect', e); }
       localStorage.setItem('grove_onboarded', 'true');
       window.location.replace('/home/');
     }
   } catch (e) {
-    console.error('Error handling magic link redirect', e);
+    console.error('[onboarding] Error handling magic link redirect', e);
   }
 })();
 
