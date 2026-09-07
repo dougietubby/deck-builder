@@ -39,25 +39,24 @@ verifyBtn?.addEventListener('click', async ()=>{
 });
 
 const supabaseClientPromise = getSupabase();
+const getAuthCallbackUrl = () => new URL('/auth/callback', window.location.origin).toString();
 
-// Handle redirect back from Supabase magic link: parse session from URL and store it
+// Fallback for browsers that reopen the app directly into the onboarding page.
 (async ()=>{
   try {
     const supabaseClient = await supabaseClientPromise;
     if (!supabaseClient) return;
     const { data, error } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
     if (error) {
-      // Not necessarily an error — only log
       console.log('getSessionFromUrl:', error.message || error);
     }
 
-    const user = data?.session?.user;
+    const user = data?.session?.user || (await supabaseClient.auth.getSession()).data.session?.user;
     if (user) {
-      // ensure profile and link OneSignal, then redirect
       const profile = await ensureProfile(user);
-      try { await syncOneSignalUser(user, profile); } catch(e){}
-      localStorage.setItem('grove_onboarded','true');
-      window.location.href = '/home/';
+      try { await syncOneSignalUser(user, profile); } catch (e) { console.warn('OneSignal sync skipped on landing redirect', e); }
+      localStorage.setItem('grove_onboarded', 'true');
+      window.location.replace('/home/');
     }
   } catch (e) {
     console.error('Error handling magic link redirect', e);
@@ -77,10 +76,22 @@ sendMagicLink?.addEventListener('click', async ()=>{
     const supabaseClient = await supabaseClientPromise;
     if (!supabaseClient) { authResult.innerText = 'Supabase client not available'; return; }
 
-    const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/home/' } });
-    if (error) { authResult.innerText = error.message || 'Authentication error'; console.error('signInWithOtp error', error); return; }
-    authResult.innerText = 'Magic link sent — check your email';
-  } catch (e) { authResult.innerText = 'Auth error'; }
+    const callbackUrl = getAuthCallbackUrl();
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: callbackUrl }
+    });
+
+    if (error) {
+      authResult.innerText = error.message || 'Authentication error';
+      console.error('signInWithOtp error', error);
+      return;
+    }
+
+    authResult.innerHTML = 'CHECK YOUR EMAIL<br><small>We sent a magic link to <strong>' + email + '</strong>. Tap the link in your email to finish signing in.</small>';
+  } catch (e) {
+    authResult.innerText = 'Auth error';
+  }
 });
 
 continueBtn?.addEventListener('click', async ()=>{

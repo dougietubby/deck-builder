@@ -1,6 +1,8 @@
 {
   "name": "404find",
   "short_name": "404find",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-192.png",
