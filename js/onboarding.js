@@ -10,11 +10,17 @@ const welcomeScreen = document.getElementById('welcomeScreen');
 const verificationScreen = document.getElementById('verificationScreen');
 const installBtn = document.getElementById('installBtn');
 const continueBtn = document.getElementById('continueBtn');
-const sendMagicLink = document.getElementById('sendMagicLink');
 const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+const authHeading = document.getElementById('authHeading');
+const authSubmit = document.getElementById('authSubmit');
+const authModeToggle = document.getElementById('authModeToggle');
+const forgotPassword = document.getElementById('forgotPassword');
 const authResult = document.getElementById('authResult');
 
 let deferredPrompt = null;
+let isLoginMode = false;
 
 window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
 
@@ -39,89 +45,130 @@ verifyBtn?.addEventListener('click', async ()=>{
 });
 
 const supabaseClientPromise = getSupabase();
-const getAuthCallbackUrl = () => new URL('/auth/callback', window.location.origin).toString();
 
-// Fallback for browsers that reopen the app directly into the onboarding page.
-(async ()=>{
+function showAuthMessage(message, isError = true) {
+  authResult.textContent = message;
+  authResult.style.color = isError ? '#f66' : '#7FFF00';
+}
+
+function setLoginMode(loginMode) {
+  isLoginMode = loginMode;
+  authHeading.textContent = loginMode ? 'Welcome back' : 'Create your Grove account';
+  authSubmit.textContent = loginMode ? 'Enter the Grove' : 'Create Account';
+  authModeToggle.textContent = loginMode ? 'Create a new account' : 'I already have an account';
+  confirmPasswordInput.style.display = loginMode ? 'none' : '';
+  forgotPassword.style.display = loginMode ? '' : 'none';
+  showAuthMessage('');
+}
+
+async function finishAuthentication(user) {
+  const profile = await ensureProfile(user);
+  if (!profile) throw new Error('Profile unavailable after authentication');
+  try {
+    await syncOneSignalUser(user, profile);
+  } catch (error) {
+    console.warn('[onboarding] OneSignal sync skipped after authentication', error);
+  }
+  localStorage.setItem('grove_onboarded', 'true');
+  window.location.replace('/home/');
+}
+
+function friendlyAuthError(error, action) {
+  const message = (error?.message || '').toLowerCase();
+  if (message.includes('invalid login credentials')) return 'That email or password is incorrect.';
+  if (message.includes('already registered') || message.includes('user already registered')) return 'An account with that email already exists. Try signing in.';
+  if (message.includes('email not confirmed')) return 'Please confirm your email address before signing in.';
+  if (message.includes('password')) return 'Use a password with at least 6 characters.';
+  if (message.includes('rate limit')) return 'Too many attempts. Please wait a moment and try again.';
+  return action === 'signup' ? 'We could not create your account. Please try again.' : 'We could not sign you in. Please try again.';
+}
+
+authModeToggle?.addEventListener('click', () => setLoginMode(!isLoginMode));
+
+authSubmit?.addEventListener('click', async () => {
+  const email = (emailInput.value || '').trim().toLowerCase();
+  const password = passwordInput.value || '';
+  const confirmation = confirmPasswordInput.value || '';
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) { showAuthMessage('Enter a valid email address.'); return; }
+  if (!password || password.length < 6) { showAuthMessage('Password must be at least 6 characters.'); return; }
+  if (!isLoginMode && password !== confirmation) { showAuthMessage('Passwords do not match.'); return; }
+
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) { showAuthMessage('Authentication is temporarily unavailable.'); return; }
+  authSubmit.disabled = true;
+  showAuthMessage(isLoginMode ? 'Entering the Grove...' : 'Creating your account...', false);
+  try {
+    const result = isLoginMode
+      ? await supabaseClient.auth.signInWithPassword({ email, password })
+      : await supabaseClient.auth.signUp({ email, password });
+    if (result.error) throw result.error;
+    if (!result.data.session?.user) {
+      setLoginMode(true);
+      showAuthMessage('Account created. Check your email to confirm your address, then sign in.', false);
+      return;
+    }
+    await finishAuthentication(result.data.session.user);
+  } catch (error) {
+    console.error('[onboarding] password authentication failed', error);
+    showAuthMessage(friendlyAuthError(error, isLoginMode ? 'login' : 'signup'));
+  } finally {
+    authSubmit.disabled = false;
+  }
+});
+
+forgotPassword?.addEventListener('click', async () => {
+  const email = (emailInput.value || '').trim().toLowerCase();
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) { showAuthMessage('Enter your email address first.'); return; }
+  const supabaseClient = await supabaseClientPromise;
+  if (!supabaseClient) { showAuthMessage('Authentication is temporarily unavailable.'); return; }
+  forgotPassword.disabled = true;
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: new URL('/', window.location.origin).toString() });
+    if (error) throw error;
+    showAuthMessage('Check your email for a password reset link.', false);
+  } catch (error) {
+    console.error('[onboarding] password reset failed', error);
+    showAuthMessage('We could not start password recovery. Please try again.');
+  } finally {
+    forgotPassword.disabled = false;
+  }
+});
+
+async function handleRecoverySession(supabaseClient) {
+  if (new URLSearchParams(window.location.hash.slice(1)).get('type') !== 'recovery') return false;
+  const newPassword = window.prompt('Enter a new password (at least 6 characters):');
+  if (!newPassword || newPassword.length < 6) {
+    showAuthMessage('Password reset was not completed. Use at least 6 characters.');
+    return true;
+  }
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+  history.replaceState({}, document.title, window.location.pathname);
+  if (error) {
+    showAuthMessage('This password reset link is expired or invalid. Request a new one.');
+    return true;
+  }
+  await supabaseClient.auth.signOut();
+  setLoginMode(true);
+  showAuthMessage('Password updated. Sign in with your new password.', false);
+  return true;
+}
+
+(async () => {
   try {
     const supabaseClient = await supabaseClientPromise;
     if (!supabaseClient) return;
-
-    console.log('[onboarding] checking for existing auth response on load', window.location.href);
-    const { data, error } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
-    if (error) {
-      console.log('[onboarding] getSessionFromUrl result', error.message || error);
-    }
-
-    const user = data?.session?.user || (await supabaseClient.auth.getSession()).data.session?.user;
-    if (user) {
-      console.log('[onboarding] auth session available, continuing to home', user.id);
-      const profile = await ensureProfile(user);
-      console.log('[onboarding] ensureProfile result', profile ? profile.id : null);
-      try { await syncOneSignalUser(user, profile); console.log('[onboarding] OneSignal sync requested'); } catch (e) { console.warn('[onboarding] OneSignal sync skipped on landing redirect', e); }
-      localStorage.setItem('grove_onboarded', 'true');
-      window.location.replace('/home/');
-    }
-  } catch (e) {
-    console.error('[onboarding] Error handling magic link redirect', e);
-  }
-})();
-
-sendMagicLink?.addEventListener('click', async ()=>{
-  const email = (emailInput.value || '').trim();
-  if (!email) { authResult.innerText = 'Enter an email'; return; }
-  try {
-    if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-      authResult.innerText = 'Supabase not configured. Ask admin to set SUPABASE_URL and SUPABASE_ANON_KEY.';
-      console.error('Supabase config missing', { SUPABASE_URL: window.SUPABASE_URL, SUPABASE_ANON_KEY: !!window.SUPABASE_ANON_KEY });
+    if (await handleRecoverySession(supabaseClient)) return;
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session?.user) {
+      await finishAuthentication(session.user);
       return;
     }
-
-    const supabaseClient = await supabaseClientPromise;
-    if (!supabaseClient) { authResult.innerText = 'Supabase client not available'; return; }
-
-    const callbackUrl = getAuthCallbackUrl();
-    const { error } = await supabaseClient.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: callbackUrl }
-    });
-
-    if (error) {
-      authResult.innerText = error.message || 'Authentication error';
-      console.error('signInWithOtp error', error);
-      return;
-    }
-
-    authResult.innerHTML = 'CHECK YOUR EMAIL<br><small>We sent a magic link to <strong>' + email + '</strong>. Tap the link in your email to finish signing in.</small>';
-  } catch (e) {
-    authResult.innerText = 'Auth error';
-  }
-});
-
-continueBtn?.addEventListener('click', async ()=>{
-  const supabaseClient = await supabaseClientPromise;
-  if (!supabaseClient) { alert('Supabase client not available.'); return; }
-  const session = await supabaseClient.auth.getSession();
-  const user = session?.data?.session?.user;
-  if (!user) { alert('Please sign in first.'); return; }
-
-  // ensure profile exists
-  const profile = await ensureProfile(user);
-  // associate OneSignal external id and tags
-  await syncOneSignalUser(user, profile);
-
-  localStorage.setItem('grove_onboarded','true');
-  // redirect to home
-  window.location.href = '/home/';
-});
-
-// Auto-redirect if already authenticated and onboarded
-(async ()=>{
-  const supabaseClient = await supabaseClientPromise;
-  if (!supabaseClient) return;
-  const session = await supabaseClient.auth.getSession();
-  const onboarded = localStorage.getItem('grove_onboarded') === 'true';
-  if (session?.data?.session?.user && onboarded) {
-    window.location.href = '/home/';
+    const verified = localStorage.getItem('grove_verified') === 'true';
+    verificationScreen.style.display = verified ? 'none' : 'flex';
+    welcomeScreen.style.display = verified ? 'flex' : 'none';
+    setLoginMode(false);
+  } catch (error) {
+    console.error('[onboarding] authentication initialization failed', error);
+    showAuthMessage('We could not load authentication. Please refresh and try again.');
   }
 })();

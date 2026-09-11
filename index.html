@@ -65,17 +65,15 @@
     <div class="onesignal-customlink-container"></div>
 
     <div id="postVerifyAuth" style="margin-top:12px;">
-      <p>Sign in or create your account to continue:</p>
-      <input id="emailInput" placeholder="Email address" type="email">
-      <button id="sendMagicLink">Send Magic Link</button>
-      <div id="authResult" style="margin-top:8px;color:#f66"></div>
+      <p id="authHeading">Create your Grove account</p>
+      <input id="emailInput" placeholder="Email address" type="email" autocomplete="email">
+      <input id="passwordInput" placeholder="Password" type="password" autocomplete="new-password">
+      <input id="confirmPasswordInput" placeholder="Confirm password" type="password" autocomplete="new-password">
+      <button id="authSubmit">Create Account</button>
+      <button id="authModeToggle" type="button">I already have an account</button>
+      <button id="forgotPassword" type="button">Forgot password?</button>
+      <div id="authResult" style="margin-top:8px;color:#f66" aria-live="polite"></div>
     </div>
-
-    <button
-      id="continueBtn"
-      disabled>
-      Continue
-    </button>
 
   </div>
 </div>
