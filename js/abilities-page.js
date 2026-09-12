@@ -45,42 +45,51 @@ async function collectInputs(ability, client, currentUserId) {
   if (!schema.length) return window.confirm(`Cast ${ability.name}? This will spend ${ability.manaCost} mana.`) ? {} : null;
   const form = document.createElement('form');
   form.className = 'modal-box';
-  form.innerHTML = `<h2>${escapeHtml(ability.name)}</h2>${schema.map((input) => {
-    const options = input.options || [];
-    if (input.type === 'player' || input.type === 'camp') {
-      return `<label>${escapeHtml(input.label || input.key)}<select name="${escapeHtml(input.key)}" ${input.required ? 'required' : ''}><option value="">${escapeHtml(input.type === 'camp' ? 'Select a camp' : 'Select a player')}</option>${options.length ? options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join('') : ''}</select></label>`;
-    }
-    return `<label>${escapeHtml(input.label || input.key)}<input name="${escapeHtml(input.key)}" placeholder="${escapeHtml(input.label || input.key)}" ${input.required ? 'required' : ''}></label>`;
-  }).join('')}<button class="btn btn-primary" type="submit">CONFIRM CAST</button><button class="btn" type="button" data-cancel>CANCEL</button>`;
+  form.innerHTML = `<h2>${escapeHtml(ability.name)}</h2>${schema.map((input) => `<label>${escapeHtml(input.label || input.key)}<select name="${escapeHtml(input.key)}" ${input.required ? 'required' : ''}><option value="">Loading options...</option></select></label>`).join('')}<button class="btn btn-primary" type="submit" disabled>CONFIRM CAST</button><button class="btn" type="button" data-cancel>CANCEL</button>`;
 
   const wrapper = document.createElement('div');
   wrapper.className = 'modal-screen';
   wrapper.appendChild(form);
   document.body.appendChild(wrapper);
 
-  const playerInputs = schema.filter((input) => input.type === 'player');
-  if (playerInputs.length) {
-    const { data: players } = await client.rpc('list_grove_players');
-    playerInputs.forEach((input) => {
-      const select = form.elements.namedItem(input.key);
-      if (!select) return;
-      (players || []).forEach((player) => select.add(new Option(`${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}`, player.id)));
-    });
+  const { data: players, error: playersError } = await client.rpc('list_grove_players');
+  if (playersError) {
+    wrapper.remove();
+    throw playersError;
   }
 
-  const campInputs = schema.filter((input) => input.type === 'camp');
-  if (campInputs.length) {
-    const campOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Staff'];
-    campInputs.forEach((input) => {
-      const select = form.elements.namedItem(input.key);
-      if (!select) return;
-      campOptions.forEach((camp) => select.add(new Option(camp, camp)));
-    });
+  for (const input of schema) {
+    const select = form.elements.namedItem(input.key);
+    if (!select) continue;
+    const options = input.type === 'player'
+      ? (players || []).map((player) => ({ value: player.id, label: `${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}` }))
+      : input.type === 'camp'
+        ? [...new Set((players || []).map((player) => player.camp).filter(Boolean))].map((camp) => ({ value: camp, label: camp }))
+        : normalizeInputOptions(input);
+    select.replaceChildren(new Option(options.length ? `Select ${input.label || input.type}` : `No ${input.type} options configured`, ''));
+    options.forEach((option) => select.add(new Option(option.label, option.value)));
+    select.disabled = options.length === 0;
   }
+
+  const submit = form.querySelector('button[type="submit"]');
+  const updateSubmitState = () => {
+    submit.disabled = schema.some((input) => input.required && !form.elements.namedItem(input.key)?.value);
+  };
+  form.addEventListener('change', updateSubmitState);
+  updateSubmitState();
 
   return new Promise((resolve) => {
     const close = (value) => { wrapper.remove(); resolve(value); };
     form.addEventListener('submit', (event) => { event.preventDefault(); close(Object.fromEntries(new FormData(form).entries())); });
     form.querySelector('[data-cancel]').addEventListener('click', () => close(null));
   });
+}
+
+function normalizeInputOptions(input) {
+  const options = input.options || input.entities || [];
+  return options
+    .map((option) => typeof option === 'string'
+      ? { value: option, label: option }
+      : { value: option.id ?? option.value, label: option.name ?? option.label })
+    .filter((option) => option.value && option.label);
 }

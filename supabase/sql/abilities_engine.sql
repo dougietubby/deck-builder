@@ -80,7 +80,9 @@ revoke insert, update, delete on public.ability_catalog from anon, authenticated
 create or replace function public.protect_progression_fields() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  if auth.uid() = new.id and coalesce(auth.jwt()->'app_metadata'->>'role', '') not in ('admin', 'production') then
+  if auth.uid() = new.id
+    and current_setting('app.grove_ability_cast', true) is distinct from 'true'
+    and coalesce(auth.jwt()->'app_metadata'->>'role', '') not in ('admin', 'production') then
     new.mana := old.mana;
     new.xp := old.xp;
     new.level := old.level;
@@ -198,6 +200,7 @@ begin
     if usage_count >= limit_count then raise exception 'Ability usage limit reached'; end if;
   end if;
 
+  perform set_config('app.grove_ability_cast', 'true', true);
   update profiles set mana = mana - definition.mana_cost
     where id = auth.uid() and coalesce(mana, 0) >= definition.mana_cost
     returning mana into remaining;
