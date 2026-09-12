@@ -35,6 +35,44 @@ export async function canAffordAbility(abilityId) {
   return (data?.mana || 0) >= ability.manaCost;
 }
 
+export async function getAbilityInputOptions(client, input, { currentUserId, currentLevel } = {}) {
+  if (input.type === 'player') {
+    const { data, error } = await client.rpc('list_grove_players');
+    if (error) throw error;
+    return (data || [])
+      .filter((player) => !input.exclude_self || player.id !== currentUserId)
+      .map((player) => ({
+        value: player.id,
+        label: `${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}`
+      }));
+  }
+
+  if (input.type === 'camp') {
+    const { data, error } = await client.rpc('list_grove_players');
+    if (error) throw error;
+    return [...new Set((data || []).map((player) => player.camp).filter(Boolean))]
+      .map((camp) => ({ value: camp, label: camp }));
+  }
+
+  return normalizeConfiguredOptions(input, currentLevel);
+}
+
+function normalizeConfiguredOptions(input, currentLevel) {
+  const options = input.options || input.entities || [];
+  return options
+    .map((option) => typeof option === 'string'
+      ? { id: option, name: option }
+      : option)
+    .filter((option) => option.active !== false && option.enabled !== false)
+    .filter((option) => option.min_level == null || currentLevel == null || currentLevel >= option.min_level)
+    .filter((option) => input.ability == null || option.abilities?.[input.ability] !== false)
+    .map((option) => ({
+      value: option.id ?? option.value,
+      label: option.name ?? option.label
+    }))
+    .filter((option) => option.value && option.label);
+}
+
 export async function commitAbility(castId) {
   const client = await getSupabase();
   if (!client) throw new Error('Supabase is not configured.');

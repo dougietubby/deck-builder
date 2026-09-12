@@ -1,6 +1,6 @@
 import { initBottomNav } from './shared-nav.js';
 import { getProgression } from './progression.js';
-import { castAbility, getAbilityDefinitions } from './ability-service.js';
+import { castAbility, getAbilityDefinitions, getAbilityInputOptions } from './ability-service.js';
 import { getSupabase } from './supabase.js';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       button.disabled = true; button.textContent = 'CASTING...';
       try {
         const ability = abilities.find((item) => item.id === button.dataset.ability);
-        const inputs = await collectInputs(ability, client, session.user.id);
+        const inputs = await collectInputs(ability, client, session.user.id, progression.level);
         if (!inputs) return;
         const target = { userId: inputs.target_player, camp: inputs.assigned_camp, npc: inputs.npc, location: inputs.location };
         await castAbility(ability.id, target, inputs);
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (error) { status.textContent = error.message || 'Unable to load spellbook.'; }
 });
 
-async function collectInputs(ability, client, currentUserId) {
+async function collectInputs(ability, client, currentUserId, currentLevel) {
   const schema = ability.input_schema || [];
   if (!schema.length) return window.confirm(`Cast ${ability.name}? This will spend ${ability.manaCost} mana.`) ? {} : null;
   const form = document.createElement('form');
@@ -52,20 +52,10 @@ async function collectInputs(ability, client, currentUserId) {
   wrapper.appendChild(form);
   document.body.appendChild(wrapper);
 
-  const { data: players, error: playersError } = await client.rpc('list_grove_players');
-  if (playersError) {
-    wrapper.remove();
-    throw playersError;
-  }
-
   for (const input of schema) {
     const select = form.elements.namedItem(input.key);
     if (!select) continue;
-    const options = input.type === 'player'
-      ? (players || []).map((player) => ({ value: player.id, label: `${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}` }))
-      : input.type === 'camp'
-        ? [...new Set((players || []).map((player) => player.camp).filter(Boolean))].map((camp) => ({ value: camp, label: camp }))
-        : normalizeInputOptions(input);
+    const options = await getAbilityInputOptions(client, input, { currentUserId, currentLevel });
     select.replaceChildren(new Option(options.length ? `Select ${input.label || input.type}` : `No ${input.type} options configured`, ''));
     options.forEach((option) => select.add(new Option(option.label, option.value)));
     select.disabled = options.length === 0;
@@ -83,13 +73,4 @@ async function collectInputs(ability, client, currentUserId) {
     form.addEventListener('submit', (event) => { event.preventDefault(); close(Object.fromEntries(new FormData(form).entries())); });
     form.querySelector('[data-cancel]').addEventListener('click', () => close(null));
   });
-}
-
-function normalizeInputOptions(input) {
-  const options = input.options || input.entities || [];
-  return options
-    .map((option) => typeof option === 'string'
-      ? { value: option, label: option }
-      : { value: option.id ?? option.value, label: option.name ?? option.label })
-    .filter((option) => option.value && option.label);
 }
