@@ -1,6 +1,6 @@
 import { getSupabase } from './supabase.js';
 import { getAchievement } from './achievements.js';
-import { addXP } from './progression.js';
+import { addXP, addMana } from './progression.js';
 
 export async function completeAchievement(achievementId) {
   const achievement = getAchievement(achievementId);
@@ -16,5 +16,6 @@ export async function completeAchievement(achievementId) {
   });
   if (error) throw error;
   if (achievement.reward?.type === 'xp') await addXP(achievement.reward.amount, achievement.name);
+  if (achievement.reward?.type === 'mana') await addMana(achievement.reward.amount);
   return data;
 }
