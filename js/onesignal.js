@@ -32,7 +32,8 @@ function getOneSignal() {
 
 export async function syncOneSignalUser(user, profile) {
   if (!user?.id) return false;
-  const cacheKey = `${user.id}:${profile?.camp || localStorage.getItem('grove_camp') || 'unknown'}`;
+  const camp = profile?.is_production ? 'Staff' : (profile?.camp || localStorage.getItem('grove_camp') || 'unknown');
+  const cacheKey = `${user.id}:${camp}`;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const OneSignal = await getOneSignal();
@@ -41,7 +42,7 @@ export async function syncOneSignalUser(user, profile) {
         await OneSignal.User.addTags({
           grove_member: 'true',
           supabase_user_id: user.id,
-          camp: profile?.camp || localStorage.getItem('grove_camp') || 'unknown'
+          camp
         });
         localStorage.setItem('grove_onesignal_sync', cacheKey);
       }

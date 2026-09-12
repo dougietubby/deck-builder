@@ -28,7 +28,7 @@ serve(async (req) => {
         : job.recipient_camp
           ? [{ field: 'tag', key: 'camp', relation: '=', value: job.recipient_camp }]
           : job.audience === 'production'
-            ? [{ field: 'tag', key: 'PRODUCTION', relation: '=', value: 'true' }]
+            ? [{ field: 'tag', key: 'camp', relation: '=', value: 'Staff' }]
             : [{ field: 'tag', key: 'grove_member', relation: '=', value: 'true' }]
       const response = await fetch('https://api.onesignal.com/notifications', {
         method: 'POST',

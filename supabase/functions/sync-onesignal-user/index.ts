@@ -35,8 +35,7 @@ serve(async (req) => {
         tags: {
           grove_member: 'true',
           supabase_user_id: user.id,
-          camp: profile?.camp || 'unknown',
-          PRODUCTION: profile?.is_production ? 'true' : 'false'
+          camp: profile?.is_production ? 'Staff' : (profile?.camp || 'unknown')
         }
       }
     })
@@ -47,5 +46,5 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'OneSignal update failed', detail: body.slice(0, 1000) }), { status: 502 })
   }
 
-  return new Response(JSON.stringify({ synced: true, user_id: user.id, production: Boolean(profile?.is_production) }), { status: 200 })
+  return new Response(JSON.stringify({ synced: true, user_id: user.id, camp: profile?.is_production ? 'Staff' : (profile?.camp || 'unknown') }), { status: 200 })
 })
