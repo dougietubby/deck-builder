@@ -23,15 +23,7 @@ export function initBottomNav() {
         </svg>
         <span class="nav-label">Profile</span>
       </a>
-      <a href="/decks/" class="nav-item" id="nav-decks" title="Decks">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
-          <line x1="10" y1="8" x2="14" y2="8"></line>
-          <line x1="10" y1="12" x2="14" y2="12"></line>
-          <line x1="10" y1="16" x2="14" y2="16"></line>
-        </svg>
-        <span class="nav-label">Decks</span>
-      </a>
+      <!-- Decks hotbar item intentionally hidden during development; restore this block when ready. -->
       <a href="/events/" class="nav-item" id="nav-events" title="Events">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
