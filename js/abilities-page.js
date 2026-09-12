@@ -45,19 +45,39 @@ async function collectInputs(ability, client, currentUserId) {
   if (!schema.length) return window.confirm(`Cast ${ability.name}? This will spend ${ability.manaCost} mana.`) ? {} : null;
   const form = document.createElement('form');
   form.className = 'modal-box';
-  form.innerHTML = `<h2>${escapeHtml(ability.name)}</h2>${schema.map((input) => `<label>${escapeHtml(input.label || input.key)}${input.type === 'player' ? `<select name="${escapeHtml(input.key)}"><option value="">Select a player</option></select>` : `<input name="${escapeHtml(input.key)}" placeholder="${escapeHtml(input.label || '')}" ${input.required ? 'required' : ''}>`}</label>`).join('')}<button class="btn btn-primary" type="submit">CONFIRM CAST</button><button class="btn" type="button" data-cancel>CANCEL</button>`;
+  form.innerHTML = `<h2>${escapeHtml(ability.name)}</h2>${schema.map((input) => {
+    const options = input.options || [];
+    if (input.type === 'player' || input.type === 'camp') {
+      return `<label>${escapeHtml(input.label || input.key)}<select name="${escapeHtml(input.key)}" ${input.required ? 'required' : ''}><option value="">${escapeHtml(input.type === 'camp' ? 'Select a camp' : 'Select a player')}</option>${options.length ? options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join('') : ''}</select></label>`;
+    }
+    return `<label>${escapeHtml(input.label || input.key)}<input name="${escapeHtml(input.key)}" placeholder="${escapeHtml(input.label || input.key)}" ${input.required ? 'required' : ''}></label>`;
+  }).join('')}<button class="btn btn-primary" type="submit">CONFIRM CAST</button><button class="btn" type="button" data-cancel>CANCEL</button>`;
+
   const wrapper = document.createElement('div');
   wrapper.className = 'modal-screen';
   wrapper.appendChild(form);
   document.body.appendChild(wrapper);
+
   const playerInputs = schema.filter((input) => input.type === 'player');
   if (playerInputs.length) {
     const { data: players } = await client.rpc('list_grove_players');
     playerInputs.forEach((input) => {
       const select = form.elements.namedItem(input.key);
+      if (!select) return;
       (players || []).forEach((player) => select.add(new Option(`${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}`, player.id)));
     });
   }
+
+  const campInputs = schema.filter((input) => input.type === 'camp');
+  if (campInputs.length) {
+    const campOptions = ['Red', 'Blue', 'Green', 'Yellow', 'Staff'];
+    campInputs.forEach((input) => {
+      const select = form.elements.namedItem(input.key);
+      if (!select) return;
+      campOptions.forEach((camp) => select.add(new Option(camp, camp)));
+    });
+  }
+
   return new Promise((resolve) => {
     const close = (value) => { wrapper.remove(); resolve(value); };
     form.addEventListener('submit', (event) => { event.preventDefault(); close(Object.fromEntries(new FormData(form).entries())); });

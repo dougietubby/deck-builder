@@ -6,15 +6,23 @@ export async function getAbilityDefinitions() {
   if (!client) return [];
   const { data, error } = await client.from('ability_catalog').select('*').eq('enabled', true).order('display_name');
   if (error || !data?.length || !data[0].display_name) return (await import('./abilities.js')).ABILITIES;
-  return data.map((row) => ({
-    ...row,
-    id: row.ability_id,
-    name: row.display_name,
-    manaCost: row.mana_cost,
-    uses: row.usage_limit === null ? 'Unlimited' : `${row.usage_limit} use${row.usage_limit === 1 ? '' : 's'}`,
-    input_schema: row.input_schema || [],
-    unlockRequirement: row.eligibility?.achievement ? { type: 'achievement', id: row.eligibility.achievement } : undefined
-  }));
+  return data.map((row) => {
+    const usageLimitEnabled = row.usage_limit_enabled ?? (row.usage_limit !== null || row.usage_limit_count !== null);
+    const usageLimitCount = row.usage_limit_count ?? row.usage_limit ?? null;
+    const usageLimitType = row.usage_limit_type ?? row.usage_scope ?? 'user';
+    return {
+      ...row,
+      id: row.ability_id,
+      name: row.display_name,
+      manaCost: row.mana_cost,
+      usageLimitEnabled,
+      usageLimitType,
+      usageLimitCount,
+      uses: !usageLimitEnabled || usageLimitCount === null ? 'Unlimited' : `${usageLimitCount} use${usageLimitCount === 1 ? '' : 's'}${usageLimitType === 'camp' ? ' per camp' : ''}`,
+      input_schema: row.input_schema || [],
+      unlockRequirement: row.eligibility?.achievement ? { type: 'achievement', id: row.eligibility.achievement } : undefined
+    };
+  });
 }
 
 export async function canAffordAbility(abilityId) {
