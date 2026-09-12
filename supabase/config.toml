@@ -65,6 +65,16 @@ verify_jwt = true
 import_map = "./functions/validate_whitelist/deno.json"
 entrypoint = "./functions/validate_whitelist/index.ts"
 
+[functions.process-ability-notifications]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/process-ability-notifications/index.ts"
+
+[functions.sync-onesignal-user]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/sync-onesignal-user/index.ts"
+
 [analytics]
 enabled = true
 port = 54327

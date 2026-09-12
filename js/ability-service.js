@@ -1,6 +1,21 @@
 import { getSupabase } from './supabase.js';
 import { getAbility } from './abilities.js';
-import { sendAbilityNotification } from './notifications.js';
+
+export async function getAbilityDefinitions() {
+  const client = await getSupabase();
+  if (!client) return [];
+  const { data, error } = await client.from('ability_catalog').select('*').eq('enabled', true).order('display_name');
+  if (error || !data?.length || !data[0].display_name) return (await import('./abilities.js')).ABILITIES;
+  return data.map((row) => ({
+    ...row,
+    id: row.ability_id,
+    name: row.display_name,
+    manaCost: row.mana_cost,
+    uses: row.usage_limit === null ? 'Unlimited' : `${row.usage_limit} use${row.usage_limit === 1 ? '' : 's'}`,
+    input_schema: row.input_schema || [],
+    unlockRequirement: row.eligibility?.achievement ? { type: 'achievement', id: row.eligibility.achievement } : undefined
+  }));
+}
 
 export async function canAffordAbility(abilityId) {
   const ability = getAbility(abilityId);
@@ -12,9 +27,16 @@ export async function canAffordAbility(abilityId) {
   return (data?.mana || 0) >= ability.manaCost;
 }
 
+export async function commitAbility(castId) {
+  const client = await getSupabase();
+  if (!client) throw new Error('Supabase is not configured.');
+  const { data, error } = await client.rpc('commit_ability', { cast_id_value: castId });
+  if (error) throw error;
+  return data;
+}
+
 export async function castAbility(abilityId, target = {}, variables = {}) {
-  const ability = getAbility(abilityId);
-  if (!ability) throw new Error('Unknown ability.');
+  if (!abilityId) throw new Error('Unknown ability.');
   const client = await getSupabase();
   if (!client) throw new Error('Supabase is not configured.');
   const { data: { session } } = await client.auth.getSession();
@@ -23,7 +45,5 @@ export async function castAbility(abilityId, target = {}, variables = {}) {
   if (ability.unlockRequirement && !unlocked) throw new Error('This ability is locked.');
   const { data, error } = await client.rpc('cast_ability', { ability_id_value: abilityId, target_user_id_value: target.userId || null, target_camp_value: target.camp || null, target_npc_value: target.npc || null, target_location_value: target.location || null, variables_value: variables });
   if (error) throw error;
-  const { data: sender } = await client.from('profiles').select('display_name,camp').eq('id', session.user.id).maybeSingle();
-  const notification = await sendAbilityNotification({ ability, sender, target, variables });
-  return { ...data, notification };
+  return { ...data, ability: getAbility(abilityId) || { id: abilityId } };
 }

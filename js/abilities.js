@@ -1,21 +1,35 @@
-// ============================================================
-// EASY CUSTOMIZATION AREA
-// Add abilities, costs, unlock requirements, and notification text here.
-// ============================================================
+const ICON_ROOT = '/assets/abilities/';
+
+// Local defaults keep the spellbook usable until ability_catalog is seeded.
 export const ABILITIES = [
-  { id: 'ability_telegrab', name: 'Telegrab', icon: '/assets/abilities/telegrab_icon.webp', description: 'Tell an NPC to steal an item of your choice from an enemy camp.', manaCost: 25, uses: '1 use', targetType: 'production', notificationTemplate: '[display_name] from [camp] wants you to steal [selected_item] from [display_name]', followUpTemplate: 'Something has gone missing from your camp...' },
-  { id: 'ability_hivemind', name: 'Hivemind', icon: '/assets/abilities/hive_mind_icon.webp', description: 'Plan an event that everyone has to do in the town center.', manaCost: 35, uses: '1 use per camp', targetType: 'production', notificationTemplate: '[display_name] from [camp] has planned an event for everyone! Assemble all campers to the center.', unlockRequirement: { type: 'achievement', id: 'veteran_camper' } },
-  { id: 'ability_compulsion', name: 'Compulsion', icon: '/assets/abilities/compulsion_icon.webp', description: 'Let everyone know that you are the highest level person in the Grove.', manaCost: 40, uses: '1 use', targetType: 'all', restriction: 'Only the single highest-level person may use this ability.', notificationTemplate: '[display_name] has entered [location]... Maybe if you give him something nice he will think you are cool!' },
-  { id: 'ability_spree', name: 'Spree', icon: '/assets/abilities/spree_icon.webp', description: 'Everything for sale is now valued at 1 can.', manaCost: 30, uses: '1 use per camp', duration: '1 minute', targetType: 'production', notificationTemplate: '[display_name] from [camp] has activated Shopping Spree. Everything you sell is now worth 1 can.', followUpTemplate: '[display_name] shopping spree is over' },
-  { id: 'ability_conjure', name: 'Conjure', icon: '/assets/abilities/conjure_icon.webp', description: 'Summon an NPC to help complete quests, earn kills, and share currency.', manaCost: 45, uses: '1 use', duration: '15 minutes', targetType: 'npc', notificationTemplate: '[display_name] has summoned an NPC to help with quests.' },
-  { id: 'ability_high_alch', name: 'High Alch', icon: '/assets/abilities/high_alch_icon.png', description: 'Convert any card to its original value in cans.', manaCost: 20, uses: '3 uses', targetType: 'production', restriction: 'Must be near an NPC.', notificationTemplate: '[display_name] from [camp] is high alching.', unlockRequirement: { type: 'achievement', id: 'shopaholic' } },
-  { id: 'ability_superheat', name: 'Superheat', icon: '/assets/abilities/superheat_icon.png', description: 'Bring an item to an NPC and have them transform it into something more useful.', manaCost: 25, uses: '1 use', targetType: 'production', notificationTemplate: '[display_name] has cast Superheat! Give them [item] for [result].' },
-  { id: 'ability_teleother', name: 'Teleother', icon: '/assets/abilities/teleother_icon.png', description: 'Force an NPC to relocate a camper to another location.', manaCost: 30, uses: '1 use per camp', targetType: 'npc', notificationTemplate: '[display_name] has been magically transported to [location]!' },
-  { id: 'ability_vengeance', name: 'Vengeance', icon: '/assets/abilities/vengeance_icon.png', description: 'The next time someone does something to you, they suffer a consequence too.', manaCost: 50, uses: '1 use', duration: '1 hour', targetType: 'player', notificationTemplate: 'The spell rebounds! [target] suffers [effect].', unlockRequirement: { type: 'achievement', id: 'high_score' } },
-  { id: 'ability_ice_barrage', name: 'Ice Barrage', icon: '/assets/abilities/ice_barrage_icon.png', description: 'Freeze a player current activity.', manaCost: 40, uses: '1 use', duration: '5 minutes', targetType: 'player', notificationTemplate: '[display_name] has frozen you! You cannot move for 5 minutes.' },
-  { id: 'ability_drop_party', name: 'Drop Party', icon: '/assets/abilities/drop_party_icon.png', description: 'Have an NPC conduct a drop party in the Town Center.', manaCost: 35, uses: '1 use per camp', duration: '5 minutes', targetType: 'npc', notificationTemplate: '[display_name] has asked you to throw a drop party in the town center.' },
-  { id: 'ability_love_blast', name: 'Love Blast', icon: '/assets/abilities/love_potion_icon.webp', description: 'Target a player to make them instantly fall in love with you.', manaCost: 20, uses: '1 use', targetType: 'player', notificationTemplate: 'SPLASH! [display_name] has hit you with a love blast. Give them a can.' },
-  { id: 'ability_necromancy', name: 'Necromancy', icon: '/assets/abilities/necromancy_icon.webp', description: 'Target a player to make them walk to each camp like a zombie.', manaCost: 60, uses: '1 use', targetType: 'player', notificationTemplate: '', notificationTemplateConfigurable: true }
+  ability('ability_telegrab', 'Telegrab', 'Tell Production to retrieve an item from another camp.', 25, '1 use', 'telegrab_icon.webp', [{ key: 'target_player', label: 'Target player', type: 'player', required: true }, { key: 'item', label: 'Item', type: 'item', required: true }], 'commit'),
+  ability('ability_hivemind', 'Hivemind', 'Plan an event that everyone has to do in the center.', 35, '1 use per camp', 'hive_mind_icon.webp', [{ key: 'assigned_camp', label: 'Assigned camp', type: 'camp', required: true }], 'ready', { usageLimit: 1, usageScope: 'camp', unlockRequirement: { type: 'achievement', id: 'veteran_camper' } }),
+  ability('ability_compulsion', 'Compulsion', 'Let everyone know that you are the highest-level Grove member.', 25, '1 use', 'compulsion_icon.webp', [], 'instant', { eligibility: { type: 'highest_level' } }),
+  ability('ability_spree', 'Spree', 'Everything they purchase is 1 can for the next minute.', 125, '1 use per camp', 'spree_icon.webp', [], 'instant', { usageLimit: 1, usageScope: 'camp', durationSeconds: 60 }),
+  ability('ability_conjure', 'Conjure', 'Summon an NPC to follow and assist the caster for 15 minutes.', 50, '1 use', 'conjure_icon.webp', [{ key: 'npc', label: 'NPC', type: 'npc', required: true }], 'instant', { durationSeconds: 900 }),
+  ability('ability_low_alch', 'Low Alch', 'Return a card for 1 can.', 5, 'Unlimited', 'low_alch_icon.png'),
+  ability('ability_high_alch', 'High Alch', 'Return a card for its original value.', 35, '3 uses', 'high_alch_icon.png', [{ key: 'item', label: 'Card', type: 'item', required: true }], 'instant', { usageLimit: 3, unlockRequirement: { type: 'achievement', id: 'shopaholic' } }),
+  ability('ability_superheat', 'Superheat', 'Exchange one item for another result.', 10, '1 use', 'superheat_icon.png', [{ key: 'item_1', label: 'Item 1', type: 'item', required: true }, { key: 'item_2', label: 'Desired result', type: 'item', required: true }]),
+  ability('ability_teleother', 'Teleother', 'Move another camper to a chosen location.', 25, '1 use per camp', 'teleother_icon.png', [{ key: 'target_player', label: 'Target player', type: 'player', required: true }, { key: 'location', label: 'Desired location', type: 'location', required: true }], 'instant', { usageLimit: 1, usageScope: 'camp' }),
+  ability('ability_vengeance', 'Vengeance', 'The next spell that targets the caster is reflected back.', 25, '1 use', 'vengeance_icon.png', [], 'instant', { durationSeconds: 3600, target: 'caster', triggerType: 'targeted_ability', unlockRequirement: { type: 'achievement', id: 'high_score' } }),
+  ability('ability_ice_barrage', 'Ice Barrage', 'Freeze a player for five minutes.', 25, '1 use', 'ice_barrage_icon.png', [{ key: 'target_player', label: 'Target player', type: 'player', required: true }], 'instant', { durationSeconds: 300 }),
+  ability('ability_drop_party', 'Drop Party', 'Gather the NPCs and value items for a drop party in the center.', 50, '1 use per camp', 'drop_party_icon.png', [], 'ready', { usageLimit: 1, usageScope: 'camp' }),
+  ability('ability_love_blast', 'Love Blast', 'Make your target serenade the caster.', 25, '1 use', 'love_potion_icon.webp', [{ key: 'target_player', label: 'Target player', type: 'player', required: true }]),
+  ability('ability_necromancy', 'Necromancy', 'Make your target walk like a zombie through each camp.', 25, '1 use', 'necromancy_icon.webp', [{ key: 'target_player', label: 'Target player', type: 'player', required: true }])
 ];
 
-export function getAbility(abilityId) { return ABILITIES.find((ability) => ability.id === abilityId); }
+function ability(id, name, description, manaCost, uses, icon, inputs = [], workflow = 'instant', options = {}) {
+  return {
+    id, ability_id: id, name, display_name: name, description,
+    manaCost, mana_cost: manaCost, uses, icon: ICON_ROOT + icon,
+    usage_limit: options.usageLimit ?? null, usage_scope: options.usageScope ?? 'user',
+    input_schema: inputs, workflow, min_level: options.minLevel ?? 0,
+    unlockRequirement: options.unlockRequirement,
+    eligibility: options.eligibility ?? {},
+    effect_config: { duration_seconds: options.durationSeconds ?? null, target: options.target, trigger_type: options.triggerType }
+  };
+}
+
+export function getAbility(abilityId) {
+  return ABILITIES.find((ability) => ability.id === abilityId);
+}

@@ -69,6 +69,12 @@ async function finishAuthentication(user) {
   } catch (error) {
     console.warn('[onboarding] OneSignal sync skipped after authentication', error);
   }
+  try {
+    const supabaseClient = await supabaseClientPromise;
+    await supabaseClient.functions.invoke('sync-onesignal-user', { body: {} });
+  } catch (error) {
+    console.warn('[onboarding] server-side OneSignal sync deferred', error);
+  }
   localStorage.setItem('grove_onboarded', 'true');
   window.location.replace('/home/');
 }

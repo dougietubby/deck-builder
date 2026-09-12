@@ -1,8 +1,9 @@
 import { initBottomNav } from './shared-nav.js';
-import { ABILITIES } from './abilities.js';
 import { getProgression } from './progression.js';
-import { castAbility } from './ability-service.js';
+import { castAbility, getAbilityDefinitions } from './ability-service.js';
 import { getSupabase } from './supabase.js';
+
+const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 
 document.addEventListener('DOMContentLoaded', async () => {
   initBottomNav();
@@ -14,17 +15,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await client.auth.getSession();
     const { data: unlockedRows } = await client.from('user_abilities').select('ability_id').eq('user_id', session.user.id);
     const unlockedAbilities = new Set((unlockedRows || []).map((row) => row.ability_id));
+    const abilities = await getAbilityDefinitions();
     status.innerHTML = `<span>LEVEL ${progression.level}</span><span class="mana-value">${progression.mana} MANA</span><span>${progression.xp} XP</span>`;
-    list.innerHTML = ABILITIES.map((ability) => {
+    list.innerHTML = abilities.map((ability) => {
       const locked = Boolean(ability.unlockRequirement) && !unlockedAbilities.has(ability.id);
       const requirement = ability.unlockRequirement?.type === 'achievement' ? `Achievement: ${ability.unlockRequirement.id}` : `Level ${ability.unlockRequirement?.value}`;
-      return `<article class="ability-card ${locked ? 'is-locked' : ''}"><div class="ability-rune"><img src="${ability.icon}" alt="${ability.name} icon"></div><div class="ability-copy"><div class="ability-heading"><h2>${ability.name}</h2><span>${ability.manaCost} MANA</span></div><p>${ability.description}</p><small>${ability.uses}${ability.duration ? ` / ${ability.duration}` : ''}</small>${ability.restriction ? `<small class="text-warning">${ability.restriction}</small>` : ''}${locked ? `<div class="locked-label">LOCKED <span>${requirement}</span></div>` : `<button class="btn btn-primary cast-button" data-ability="${ability.id}" ${progression.mana < ability.manaCost ? 'disabled' : ''}>CAST</button>`}</div></article>`;
+      return `<article class="ability-card ${locked ? 'is-locked' : ''}"><div class="ability-rune"><img src="${escapeHtml(ability.icon)}" alt="${escapeHtml(ability.name)} icon"></div><div class="ability-copy"><div class="ability-heading"><h2>${escapeHtml(ability.name)}</h2><span>${ability.manaCost} MANA</span></div><p>${escapeHtml(ability.description)}</p><small>${escapeHtml(ability.uses || 'Configurable')}</small>${locked ? `<div class="locked-label">LOCKED <span>${escapeHtml(requirement)}</span></div>` : `<button class="btn btn-primary cast-button" data-ability="${escapeHtml(ability.id)}" ${progression.mana < ability.manaCost ? 'disabled' : ''}>CAST</button>`}</div></article>`;
     }).join('');
     list.addEventListener('click', async (event) => {
       const button = event.target.closest('.cast-button');
       if (!button) return;
       button.disabled = true; button.textContent = 'CASTING...';
-      try { await castAbility(button.dataset.ability); button.textContent = 'CAST'; } catch (error) { button.disabled = false; button.textContent = 'CAST'; alert(error.message || 'SPELL FAILED'); }
+      try {
+        const ability = abilities.find((item) => item.id === button.dataset.ability);
+        const inputs = await collectInputs(ability, client, session.user.id);
+        if (!inputs) return;
+        const target = { userId: inputs.target_player, camp: inputs.assigned_camp, npc: inputs.npc, location: inputs.location };
+        await castAbility(ability.id, target, inputs);
+        button.textContent = 'CAST';
+        status.querySelector('.mana-value').textContent = `${(await getProgression()).mana} MANA`;
+      } catch (error) { alert(error.message || 'SPELL FAILED'); }
+      finally { button.disabled = false; button.textContent = 'CAST'; }
     });
   } catch (error) { status.textContent = error.message || 'Unable to load spellbook.'; }
 });
+
+async function collectInputs(ability, client, currentUserId) {
+  const schema = ability.input_schema || [];
+  if (!schema.length) return window.confirm(`Cast ${ability.name}? This will spend ${ability.manaCost} mana.`) ? {} : null;
+  const form = document.createElement('form');
+  form.className = 'modal-box';
+  form.innerHTML = `<h2>${escapeHtml(ability.name)}</h2>${schema.map((input) => `<label>${escapeHtml(input.label || input.key)}${input.type === 'player' ? `<select name="${escapeHtml(input.key)}"><option value="">Select a player</option></select>` : `<input name="${escapeHtml(input.key)}" placeholder="${escapeHtml(input.label || '')}" ${input.required ? 'required' : ''}>`}</label>`).join('')}<button class="btn btn-primary" type="submit">CONFIRM CAST</button><button class="btn" type="button" data-cancel>CANCEL</button>`;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'modal-screen';
+  wrapper.appendChild(form);
+  document.body.appendChild(wrapper);
+  const playerInputs = schema.filter((input) => input.type === 'player');
+  if (playerInputs.length) {
+    const { data: players } = await client.rpc('list_grove_players');
+    playerInputs.forEach((input) => {
+      const select = form.elements.namedItem(input.key);
+      (players || []).forEach((player) => select.add(new Option(`${player.display_name || 'Grove member'}${player.camp ? ` (${player.camp})` : ''}`, player.id)));
+    });
+  }
+  return new Promise((resolve) => {
+    const close = (value) => { wrapper.remove(); resolve(value); };
+    form.addEventListener('submit', (event) => { event.preventDefault(); close(Object.fromEntries(new FormData(form).entries())); });
+    form.querySelector('[data-cancel]').addEventListener('click', () => close(null));
+  });
+}
