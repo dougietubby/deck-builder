@@ -1,6 +1,6 @@
 import { initBottomNav } from './shared-nav.js';
 import { getProgression } from './progression.js';
-import { castAbility, getAbilityDefinitions, getAbilityInputOptions } from './ability-service.js';
+import { castAbility, commitAbility, getAbilityDefinitions, getAbilityInputOptions } from './ability-service.js';
 import { getSupabase } from './supabase.js';
 
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -24,8 +24,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       const requirement = ability.unlockRequirement?.type === 'achievement' ? `Achievement: ${ability.unlockRequirement.id}` : `Level ${ability.unlockRequirement?.value}`;
       return `<article class="ability-card ${locked ? 'is-locked' : ''}"><div class="ability-rune"><img src="${escapeHtml(ability.icon)}" alt="${escapeHtml(ability.name)} icon"></div><div class="ability-copy"><div class="ability-heading"><h2>${escapeHtml(ability.name)}</h2><span>${ability.manaCost} MANA</span></div><p>${escapeHtml(ability.description)}</p><small>${escapeHtml(ability.uses || 'Configurable')}</small>${locked ? `<div class="locked-label">LOCKED <span>${escapeHtml(requirement)}</span></div>` : `<button class="btn btn-primary cast-button" data-ability="${escapeHtml(ability.id)}" ${progression.mana < ability.manaCost ? 'disabled' : ''}>CAST</button>`}</div></article>`;
     }).join('');
+    if (isProduction) await renderWorkflowActions(client, list);
     list.addEventListener('click', async (event) => {
       const button = event.target.closest('.cast-button');
+      const workflowButton = event.target.closest('.workflow-action');
+      if (workflowButton) {
+        workflowButton.disabled = true;
+        try {
+          await commitAbility(workflowButton.dataset.castId);
+          await renderWorkflowActions(client, list);
+        } catch (error) {
+          alert(error.message || 'WORKFLOW ACTION FAILED');
+          workflowButton.disabled = false;
+        }
+        return;
+      }
       if (!button) return;
       button.disabled = true; button.textContent = 'CASTING...';
       try {
@@ -41,6 +54,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   } catch (error) { status.textContent = error.message || 'Unable to load spellbook.'; }
 });
+
+async function renderWorkflowActions(client, list) {
+  const { data, error } = await client.rpc('list_pending_ability_workflows');
+  if (error) throw error;
+  const existing = list.querySelector('[data-workflow-panel]');
+  existing?.remove();
+  if (!data?.length) return;
+  const panel = document.createElement('section');
+  panel.dataset.workflowPanel = 'true';
+  panel.className = 'ability-workflow-panel';
+  panel.innerHTML = `<h2>PRODUCTION ACTIONS</h2>${data.map((workflow) => `<div class="ability-workflow-row"><span>${escapeHtml(workflow.display_name || workflow.ability_id)}</span><button class="btn btn-primary workflow-action" data-cast-id="${escapeHtml(workflow.cast_id)}">${workflow.workflow === 'ready' ? 'READY' : 'COMMIT'}</button></div>`).join('')}`;
+  list.prepend(panel);
+}
 
 async function collectInputs(ability, client, currentUserId, currentLevel) {
   const schema = ability.input_schema || [];
