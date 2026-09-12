@@ -13,12 +13,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progression = await getProgression();
     const client = await getSupabase();
     const { data: { session } } = await client.auth.getSession();
+    const { data: profile } = await client.from('profiles').select('is_production').eq('id', session.user.id).maybeSingle();
+    const isProduction = profile?.is_production === true;
     const { data: unlockedRows } = await client.from('user_abilities').select('ability_id').eq('user_id', session.user.id);
     const unlockedAbilities = new Set((unlockedRows || []).map((row) => row.ability_id));
     const abilities = await getAbilityDefinitions();
     status.innerHTML = `<span>LEVEL ${progression.level}</span><span class="mana-value">${progression.mana} MANA</span><span>${progression.xp} XP</span>`;
     list.innerHTML = abilities.map((ability) => {
-      const locked = Boolean(ability.unlockRequirement) && !unlockedAbilities.has(ability.id);
+      const locked = !isProduction && Boolean(ability.unlockRequirement) && !unlockedAbilities.has(ability.id);
       const requirement = ability.unlockRequirement?.type === 'achievement' ? `Achievement: ${ability.unlockRequirement.id}` : `Level ${ability.unlockRequirement?.value}`;
       return `<article class="ability-card ${locked ? 'is-locked' : ''}"><div class="ability-rune"><img src="${escapeHtml(ability.icon)}" alt="${escapeHtml(ability.name)} icon"></div><div class="ability-copy"><div class="ability-heading"><h2>${escapeHtml(ability.name)}</h2><span>${ability.manaCost} MANA</span></div><p>${escapeHtml(ability.description)}</p><small>${escapeHtml(ability.uses || 'Configurable')}</small>${locked ? `<div class="locked-label">LOCKED <span>${escapeHtml(requirement)}</span></div>` : `<button class="btn btn-primary cast-button" data-ability="${escapeHtml(ability.id)}" ${progression.mana < ability.manaCost ? 'disabled' : ''}>CAST</button>`}</div></article>`;
     }).join('');
